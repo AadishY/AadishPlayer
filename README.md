@@ -26,7 +26,7 @@ Created with ❤️ by **Aadish Yadav**
 ## ✨ Features
 
 - **📼 Right-Border Cassette / DVD Deck Bay**:
-  - Interactive multi-tape bay featuring all 3 stations (*Midnight Reverie*, *Golden Bollywood*, and *Retro Twilight Lo-Fi*).
+  - Interactive multi-tape bay featuring all 3 stations (*NotIndian*, *Indian Saloon*, and *Chatpate Gaane*).
   - Active tape pops out with real-time spinning dual spools and direct track navigation buttons.
   - Dedicated **Song Selection Popup Modal** with track durations, movie info, and one-tap playback.
 - **💿 Rotating Vinyl Turntable**:

@@ -60,11 +60,11 @@ export function getBackgroundsForPlaylist(playlistId: string) {
 export const PLAYLISTS: Playlist[] = [
   {
     id: "nostalgia-mix",
-    name: "Midnight Reverie",
+    name: "NotIndian",
     tagline: "Late night nostalgia, anime loops & mellow beats",
     themeBackground: "/bg/spider.webp",
     cassetteColor: "from-amber-600 to-amber-900",
-    cassetteLabel: "SIDE A • MIDNIGHT LO-FI",
+    cassetteLabel: "SIDE A • NOTINDIAN LO-FI",
     youtubeUrl: "https://www.youtube.com/watch?v=9XHrWGJtO1A&list=RD9XHrWGJtO1A",
     tracks: [
       { id: "rev-1", title: "Misery. (Best Part Sped Up)", artist: "pupsies", film: "Subaru Natsuki", year: 2024, duration: 133, videoId: "9XHrWGJtO1A" },
@@ -77,11 +77,11 @@ export const PLAYLISTS: Playlist[] = [
   },
   {
     id: "indian-nostalgia",
-    name: "Golden Bollywood",
+    name: "Indian Saloon",
     tagline: "Unforgettable 2000s monsoon melodies & road trips",
     themeBackground: "/bg/House.webp",
     cassetteColor: "from-rose-700 to-amber-800",
-    cassetteLabel: "SIDE B • BOLLYWOOD GOLD",
+    cassetteLabel: "SIDE B • INDIAN SALOON",
     youtubeUrl: "https://www.youtube.com/watch?v=fSS_R91Nimw&list=RDfSS_R91Nimw",
     tracks: [
       { id: "ind-1", title: "Iktara", artist: "Kavita Seth & Amit Trivedi", film: "Wake Up Sid", year: 2009, duration: 254, videoId: "fSS_R91Nimw" },
@@ -94,11 +94,11 @@ export const PLAYLISTS: Playlist[] = [
   },
   {
     id: "retro-chill",
-    name: "Retro Twilight Lo-Fi",
+    name: "Chatpate Gaane",
     tagline: "Cassette vibes, warm study lamps & vintage synth",
     themeBackground: "/bg/console.webp",
     cassetteColor: "from-indigo-800 to-slate-900",
-    cassetteLabel: "SIDE C • RETRO SYNTH",
+    cassetteLabel: "SIDE C • CHATPATE GAANE",
     youtubeUrl: "https://www.youtube.com/watch?v=8GW6sLrK40k&list=RD8GW6sLrK40k",
     tracks: [
       { id: "ret-1", title: "Resonance", artist: "HOME", film: "Odyssey", year: 2014, duration: 212, videoId: "8GW6sLrK40k" },
