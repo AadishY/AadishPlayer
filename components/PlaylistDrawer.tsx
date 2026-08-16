@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Playlist, PLAYLISTS, getBackgroundsForPlaylist, Track } from "@/data/playlists";
 
 interface PlaylistDrawerProps {
@@ -26,16 +26,21 @@ export default function PlaylistDrawer({
   const [activeTab, setActiveTab] = useState<"tracks" | "scenes">("tracks");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  if (!isOpen) return null;
+  // Keep selectedStationId in sync with currentPlaylist when drawer opens or currentPlaylist changes
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedStationId(currentPlaylist.id);
+      setSearchQuery("");
+    }
+  }, [isOpen, currentPlaylist.id]);
 
-  const activeStation = PLAYLISTS.find((p) => p.id === selectedStationId) || currentPlaylist;
-  const allowedScenes = getBackgroundsForPlaylist(activeStation.id);
+  const activeStation = useMemo(() => {
+    return PLAYLISTS.find((p) => p.id === selectedStationId) || currentPlaylist;
+  }, [selectedStationId, currentPlaylist]);
 
-  const formatTime = (secs: number) => {
-    const m = Math.floor(secs / 60);
-    const s = Math.floor(secs % 60);
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
-  };
+  const allowedScenes = useMemo(() => {
+    return getBackgroundsForPlaylist(activeStation.id);
+  }, [activeStation.id]);
 
   const filteredTracks = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -50,7 +55,16 @@ export default function PlaylistDrawer({
           track.artist.toLowerCase().includes(q) ||
           (track.film && track.film.toLowerCase().includes(q))
       );
-  }, [activeStation, searchQuery]);
+  }, [activeStation.tracks, searchQuery]);
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  };
+
+  // ALL HOOKS ARE CALLED UNCONDITIONALLY ABOVE
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-fadeIn">

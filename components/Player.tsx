@@ -359,23 +359,28 @@ export default function Player({
     }
   }, [currentTrack, onCurrentTrackChange]);
 
-  // Advance to next track
+  // Advance to next track (strictly within active playlist)
   const handleNext = useCallback(() => {
-    setCurrentTrackIndex((prev) => (prev + 1) % currentPlaylist.tracks.length);
+    setCurrentTrackIndex((prev) => (prev + 1) % (currentPlaylist.tracks.length || 1));
     setCurrentTime(0);
-  }, [currentPlaylist.tracks.length]);
+  }, [currentPlaylist]);
 
-  // Go to previous track
+  // Go to previous track (strictly within active playlist)
   const handlePrev = useCallback(() => {
-    setCurrentTrackIndex((prev) => (prev - 1 + currentPlaylist.tracks.length) % currentPlaylist.tracks.length);
+    setCurrentTrackIndex((prev) => (prev - 1 + (currentPlaylist.tracks.length || 1)) % (currentPlaylist.tracks.length || 1));
     setCurrentTime(0);
-  }, [currentPlaylist.tracks.length]);
+  }, [currentPlaylist]);
 
-  // Reset track index randomly when playlist changes (if not specifically selecting track)
+  // Ref to always hold latest handleNext callback across YouTube events
+  const handleNextRef = useRef<() => void>(handleNext);
+  useEffect(() => {
+    handleNextRef.current = handleNext;
+  }, [handleNext]);
+
+  // Reset track index safely when playlist changes
   useEffect(() => {
     if (selectedTrackIndex === null || selectedTrackIndex === undefined) {
-      const rand = Math.floor(Math.random() * currentPlaylist.tracks.length);
-      setCurrentTrackIndex(rand);
+      setCurrentTrackIndex(0);
       setCurrentTime(0);
     }
   }, [currentPlaylist.id]);
@@ -462,12 +467,18 @@ export default function Player({
                   setIsPlaying(false);
                 }
               } else if (state === window.YT.PlayerState.ENDED) {
-                handleNext();
+                if (handleNextRef.current) {
+                  handleNextRef.current();
+                }
               }
             },
             onError: (err: any) => {
               console.warn("YouTube player encountered error:", err.data);
-              handleNext();
+              setTimeout(() => {
+                if (handleNextRef.current) {
+                  handleNextRef.current();
+                }
+              }, 1200);
             },
           },
         });
