@@ -25,12 +25,14 @@ export default function PlaylistDrawer({
   const [selectedStationId, setSelectedStationId] = useState<string>(currentPlaylist.id);
   const [activeTab, setActiveTab] = useState<"tracks" | "scenes">("tracks");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [visibleCount, setVisibleCount] = useState<number>(5);
 
   // Keep selectedStationId in sync with currentPlaylist when drawer opens or currentPlaylist changes
   useEffect(() => {
     if (isOpen) {
       setSelectedStationId(currentPlaylist.id);
       setSearchQuery("");
+      setVisibleCount(5);
     }
   }, [isOpen, currentPlaylist.id]);
 
@@ -56,6 +58,11 @@ export default function PlaylistDrawer({
           (track.film && track.film.toLowerCase().includes(q))
       );
   }, [activeStation.tracks, searchQuery]);
+
+  const displayedTracks = useMemo(() => {
+    if (searchQuery.trim()) return filteredTracks;
+    return filteredTracks.slice(0, visibleCount);
+  }, [filteredTracks, visibleCount, searchQuery]);
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -104,6 +111,7 @@ export default function PlaylistDrawer({
                 onClick={() => {
                   setSelectedStationId(playlist.id);
                   setSearchQuery("");
+                  setVisibleCount(5);
                 }}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 flex items-center gap-1.5 border ${
                   isSelected
@@ -191,12 +199,12 @@ export default function PlaylistDrawer({
 
             {/* Scrollable Tracks List */}
             <div className="overflow-y-auto py-2 space-y-1 custom-scrollbar flex-1 pr-1">
-              {filteredTracks.length === 0 ? (
+              {displayedTracks.length === 0 ? (
                 <div className="py-10 text-center text-white/40 text-xs font-mono">
                   No matching tracks found in {activeStation.name} for "{searchQuery}"
                 </div>
               ) : (
-                filteredTracks.map(({ track, originalIndex }) => {
+                displayedTracks.map(({ track, originalIndex }) => {
                   const isTrackPlaying =
                     activeStation.id === currentPlaylist.id && currentTrack?.id === track.id;
 
@@ -239,6 +247,19 @@ export default function PlaylistDrawer({
                     </div>
                   );
                 })
+              )}
+
+              {/* Incremental "Show More (+10)" button */}
+              {!searchQuery && visibleCount < filteredTracks.length && (
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 10)}
+                  className="w-full py-2.5 px-3 mt-2 rounded-xl bg-white/10 hover:bg-amber-400/20 text-amber-300 hover:text-amber-200 border border-white/10 hover:border-amber-400/50 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] shadow-sm"
+                >
+                  <span>Show More (+10)</span>
+                  <span className="text-[10px] text-white/50 font-mono">
+                    • {filteredTracks.length - visibleCount} more
+                  </span>
+                </button>
               )}
             </div>
           </>

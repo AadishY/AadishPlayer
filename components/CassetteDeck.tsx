@@ -25,6 +25,7 @@ export default function CassetteRack({
 }: CassetteRackProps) {
   const [popupPlaylist, setPopupPlaylist] = useState<Playlist | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [visibleCount, setVisibleCount] = useState<number>(5);
 
   const formatTime = (seconds: number): string => {
     const m = Math.floor(seconds / 60);
@@ -36,6 +37,7 @@ export default function CassetteRack({
     e.stopPropagation();
     setPopupPlaylist(playlist);
     setSearchQuery("");
+    setVisibleCount(5);
   };
 
   const filteredTracks = useMemo(() => {
@@ -51,6 +53,11 @@ export default function CassetteRack({
           (track.film && track.film.toLowerCase().includes(q))
       );
   }, [popupPlaylist, searchQuery]);
+
+  const displayedTracks = useMemo(() => {
+    if (searchQuery.trim()) return filteredTracks;
+    return filteredTracks.slice(0, visibleCount);
+  }, [filteredTracks, visibleCount, searchQuery]);
 
   return (
     <>
@@ -310,12 +317,12 @@ export default function CassetteRack({
 
             {/* Song List in Popup */}
             <div className="overflow-y-auto py-2 space-y-1.5 custom-scrollbar flex-1 pr-1">
-              {filteredTracks.length === 0 ? (
+              {displayedTracks.length === 0 ? (
                 <div className="py-8 text-center text-white/40 text-xs font-mono">
                   No matching songs found for "{searchQuery}"
                 </div>
               ) : (
-                filteredTracks.map(({ track, originalIndex }) => {
+                displayedTracks.map(({ track, originalIndex }) => {
                   const isThisPlaying =
                     popupPlaylist.id === currentPlaylist.id && currentTrack.id === track.id;
 
@@ -355,11 +362,24 @@ export default function CassetteRack({
                   );
                 })
               )}
+
+              {/* Incremental "Show More (+10)" button */}
+              {!searchQuery && visibleCount < filteredTracks.length && (
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 10)}
+                  className="w-full py-2.5 px-3 mt-2 rounded-xl bg-white/10 hover:bg-amber-400/20 text-amber-300 hover:text-amber-200 border border-white/10 hover:border-amber-400/50 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] shadow-sm"
+                >
+                  <span>Show More (+10)</span>
+                  <span className="text-[10px] text-white/50 font-mono">
+                    • {filteredTracks.length - visibleCount} more
+                  </span>
+                </button>
+              )}
             </div>
 
             {/* Popup Footer */}
             <div className="pt-2.5 border-t border-white/15 flex items-center justify-between text-[11px] text-white/60">
-              <span>Showing {filteredTracks.length} of {popupPlaylist.tracks.length} tracks</span>
+              <span>Showing {displayedTracks.length} of {popupPlaylist.tracks.length} tracks</span>
               <button
                 onClick={() => setPopupPlaylist(null)}
                 className="text-amber-400 hover:text-amber-300 font-semibold px-3 py-1 rounded bg-amber-400/15 hover:bg-amber-400/25 transition-colors"
