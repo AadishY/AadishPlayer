@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Playlist, Track, PLAYLISTS } from "@/data/playlists";
 
 interface CassetteRackProps {
@@ -24,6 +24,7 @@ export default function CassetteRack({
   onPrevTrack,
 }: CassetteRackProps) {
   const [popupPlaylist, setPopupPlaylist] = useState<Playlist | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const formatTime = (seconds: number): string => {
     const m = Math.floor(seconds / 60);
@@ -34,7 +35,22 @@ export default function CassetteRack({
   const handleOpenSongPopup = (playlist: Playlist, e: React.MouseEvent) => {
     e.stopPropagation();
     setPopupPlaylist(playlist);
+    setSearchQuery("");
   };
+
+  const filteredTracks = useMemo(() => {
+    if (!popupPlaylist) return [];
+    if (!searchQuery.trim()) return popupPlaylist.tracks.map((t, idx) => ({ track: t, originalIndex: idx }));
+    const q = searchQuery.toLowerCase();
+    return popupPlaylist.tracks
+      .map((t, idx) => ({ track: t, originalIndex: idx }))
+      .filter(
+        ({ track }) =>
+          track.title.toLowerCase().includes(q) ||
+          track.artist.toLowerCase().includes(q) ||
+          (track.film && track.film.toLowerCase().includes(q))
+      );
+  }, [popupPlaylist, searchQuery]);
 
   return (
     <>
@@ -63,7 +79,7 @@ export default function CassetteRack({
                   : "translate-x-3 hover:translate-x-1.5 scale-90 z-10 opacity-70 hover:opacity-95"
               }`}
             >
-              {/* Scaled-Down Cassette Housing Body (165px width) */}
+              {/* Scaled-Down Cassette Housing Body (168px width) */}
               <div
                 className={`w-[168px] rounded-l-[16px] p-2 glass-card border-l border-y transition-all duration-300 shadow-2xl flex flex-col active:scale-95 cursor-pointer ${
                   isActive
@@ -121,7 +137,7 @@ export default function CassetteRack({
                         </span>
                       </div>
 
-                      {/* Song Navigation Buttons on Cassette */}
+                      {/* Mini Prev/Next Track Steppers */}
                       <div className="flex items-center gap-0.5 shrink-0">
                         <button
                           onClick={(e) => {
@@ -129,10 +145,9 @@ export default function CassetteRack({
                             onPrevTrack();
                           }}
                           title="Previous song"
-                          aria-label="Previous song on cassette"
-                          className="w-4 h-4 rounded bg-white/10 hover:bg-amber-400 hover:text-slate-950 text-white/80 flex items-center justify-center text-[8px] transition-all"
+                          className="w-4 h-4 rounded bg-white/10 hover:bg-white/30 text-white flex items-center justify-center text-[8px] transition-colors"
                         >
-                          ◀
+                          ⏮
                         </button>
                         <button
                           onClick={(e) => {
@@ -140,67 +155,52 @@ export default function CassetteRack({
                             onNextTrack();
                           }}
                           title="Next song"
-                          aria-label="Next song on cassette"
-                          className="w-4 h-4 rounded bg-white/10 hover:bg-amber-400 hover:text-slate-950 text-white/80 flex items-center justify-center text-[8px] transition-all"
+                          className="w-4 h-4 rounded bg-white/10 hover:bg-white/30 text-white flex items-center justify-center text-[8px] transition-colors"
                         >
-                          ▶
+                          ⏭
                         </button>
                       </div>
                     </div>
                   )}
 
-                  {/* Cassette Body with Dual Spinning Spools */}
-                  <div className="w-full bg-black/25 p-1 flex flex-col items-center justify-center">
-                    <div className="relative w-full h-[24px] rounded bg-black/50 border border-white/10 flex items-center justify-around px-1.5 shadow-inner overflow-hidden">
-                      {/* Left Spool */}
-                      <div className="relative w-4 h-4 rounded-full bg-white/90 shadow-sm flex items-center justify-center">
-                        <div
-                          className="w-full h-full rounded-full flex items-center justify-center animate-spin-vinyl"
-                          style={{
-                            animationPlayState: isActive && isPlaying ? "running" : "paused",
-                            animationDuration: "4s",
-                          }}
-                        >
-                          <div className="w-2.5 h-2.5 rounded-full bg-black flex items-center justify-center relative">
-                            <div className="w-0.5 h-0.5 rounded-full bg-white" />
-                          </div>
-                          <div className="absolute top-0.5 right-0.5 w-0.5 h-0.5 rounded-full bg-red-600" />
-                        </div>
-                      </div>
+                  {/* Center Spool Window with Dual Spinning Tape Hubs */}
+                  <div className="relative px-3 py-2 bg-gradient-to-b from-black/80 to-slate-950/90 flex items-center justify-center gap-4">
+                    {/* Left Spool Reel */}
+                    <div className="relative w-6 h-6 rounded-full border-2 border-white/30 flex items-center justify-center bg-black/60 shadow-inner">
+                      <div
+                        className={`w-3 h-3 rounded-full border border-dashed border-amber-300/80 ${
+                          isActive && isPlaying ? "animate-[spin_4s_linear_infinite]" : ""
+                        }`}
+                      />
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
+                    </div>
 
-                      {/* Middle Status Indicator */}
-                      <span className="text-[6px] font-mono tracking-widest text-white/60">
-                        {isActive ? (isPlaying ? "PLAY" : "PAUSE") : "READY"}
-                      </span>
+                    {/* Central Tape View Window */}
+                    <div className="w-6 h-3 rounded bg-amber-900/30 border border-white/20 flex items-center justify-center">
+                      <div className="w-full h-0.5 bg-amber-600/40 rounded-full" />
+                    </div>
 
-                      {/* Right Spool */}
-                      <div className="relative w-4 h-4 rounded-full bg-white/90 shadow-sm flex items-center justify-center">
-                        <div
-                          className="w-full h-full rounded-full flex items-center justify-center animate-spin-vinyl"
-                          style={{
-                            animationPlayState: isActive && isPlaying ? "running" : "paused",
-                            animationDuration: "4s",
-                          }}
-                        >
-                          <div className="w-2.5 h-2.5 rounded-full bg-black flex items-center justify-center relative">
-                            <div className="w-0.5 h-0.5 rounded-full bg-white" />
-                          </div>
-                          <div className="absolute top-0.5 right-0.5 w-0.5 h-0.5 rounded-full bg-red-600" />
-                        </div>
-                      </div>
+                    {/* Right Spool Reel */}
+                    <div className="relative w-6 h-6 rounded-full border-2 border-white/30 flex items-center justify-center bg-black/60 shadow-inner">
+                      <div
+                        className={`w-3 h-3 rounded-full border border-dashed border-amber-300/80 ${
+                          isActive && isPlaying ? "animate-[spin_4s_linear_infinite]" : ""
+                        }`}
+                      />
+                      <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
                     </div>
                   </div>
-                </div>
 
-                {/* Prompt Bar */}
-                <div className="mt-0.5 text-center">
-                  <span
-                    className={`text-[7.5px] font-mono font-medium ${
-                      isActive ? "text-amber-300 font-bold" : "text-white/50 group-hover:text-amber-200"
-                    }`}
-                  >
-                    {isActive ? "✦ LOADED" : "INSERT ⏏"}
-                  </span>
+                  {/* Bottom Footer Details */}
+                  <div className="px-2 py-1 bg-black/70 flex items-center justify-between text-[7px] font-mono text-white/50 border-t border-white/5">
+                    <span className="truncate">{playlist.tracks.length} TRACKS</span>
+                    <button
+                      onClick={(e) => handleOpenSongPopup(playlist, e)}
+                      className="text-amber-400/90 hover:text-amber-300 underline tracking-tighter"
+                    >
+                      VIEW LIST
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -209,69 +209,43 @@ export default function CassetteRack({
       </aside>
 
       {/* ======================================================== */}
-      {/* MOBILE: Bottom Dock (Active POPUP, Inactive POPDOWN) */}
+      {/* MOBILE: Horizontal Mini Cassette Rack docked at Bottom */}
       {/* ======================================================== */}
-      <div className="md:hidden w-full flex items-center justify-center gap-2 px-2 select-none">
+      <div className="md:hidden flex items-center justify-center gap-2 w-full px-2 py-1">
         {PLAYLISTS.map((playlist) => {
           const isActive = playlist.id === currentPlaylist.id;
 
           return (
             <div
               key={playlist.id}
-              onClick={() => onSelectPlaylist(playlist)}
-              className={`flex-1 flex flex-col items-center p-2 rounded-2xl border transition-all duration-300 glass-card ${
+              onClick={() => {
+                if (!isActive) {
+                  onSelectPlaylist(playlist);
+                }
+              }}
+              className={`flex-1 min-w-0 p-2 rounded-xl border flex flex-col items-center justify-center transition-all duration-300 cursor-pointer ${
                 isActive
-                  ? "border-amber-400/90 shadow-[0_8px_24px_rgba(245,158,11,0.4)] -translate-y-2 scale-105 z-20"
-                  : "border-white/10 opacity-70 translate-y-1 scale-95 z-10"
+                  ? "border-amber-400 bg-white/20 shadow-[0_4px_16px_rgba(245,158,11,0.3)] scale-[1.02]"
+                  : "border-white/10 bg-black/40 hover:bg-black/60"
               }`}
             >
-              <div className="flex items-center gap-1.5 mb-1 w-full justify-center">
+              <div className="flex items-center gap-1.5 w-full justify-center">
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
-                    isActive ? "bg-amber-400 animate-pulse" : "bg-white/40"
+                    isActive ? "bg-amber-400 animate-pulse" : "bg-white/30"
                   }`}
                 />
-                <span className="text-[10px] font-bold text-white truncate max-w-[80px]">
+                <span className="font-bold text-[11px] text-white truncate text-center">
                   {playlist.name}
                 </span>
               </div>
 
-              {/* Mobile Active Song Controls */}
-              {isActive ? (
-                <div className="flex items-center gap-1.5 my-1">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onPrevTrack();
-                    }}
-                    className="w-5 h-5 rounded bg-white/20 text-white flex items-center justify-center text-[9px] active:scale-90"
-                  >
-                    ◀
-                  </button>
-                  <button
-                    onClick={(e) => handleOpenSongPopup(playlist, e)}
-                    className="text-[8.5px] text-amber-300 font-mono underline truncate max-w-[50px]"
-                  >
-                    Songs ♫
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onNextTrack();
-                    }}
-                    className="w-5 h-5 rounded bg-white/20 text-white flex items-center justify-center text-[9px] active:scale-90"
-                  >
-                    ▶
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={(e) => handleOpenSongPopup(playlist, e)}
-                  className="text-[8px] font-mono text-amber-300/90 my-1 underline"
-                >
-                  {playlist.tracks.length} Songs
-                </button>
-              )}
+              <button
+                onClick={(e) => handleOpenSongPopup(playlist, e)}
+                className="text-[9px] font-mono text-amber-300/90 my-1 underline"
+              >
+                {playlist.tracks.length} Songs
+              </button>
 
               <span className="text-[8px] font-mono text-white/60">
                 {isActive ? "✦ LOADED" : "⬇ RECESS"}
@@ -285,17 +259,17 @@ export default function CassetteRack({
       {/* POPUP MODAL: All Songs in Selected DVD/Cassette Playlist */}
       {/* ======================================================== */}
       {popupPlaylist && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
           {/* Click outside to close */}
           <div className="absolute inset-0" onClick={() => setPopupPlaylist(null)} />
 
-          <div className="relative w-full max-w-md glass-card rounded-[26px] p-5 sm:p-6 shadow-2xl border border-amber-400/50 z-10 flex flex-col max-h-[80vh] overflow-hidden">
+          <div className="relative w-full max-w-lg glass-card rounded-[26px] p-5 sm:p-6 shadow-2xl border border-amber-400/50 z-10 flex flex-col max-h-[85vh] overflow-hidden">
             {/* Popup Header */}
             <div className="flex items-center justify-between pb-3 border-b border-white/15">
               <div className="flex items-center gap-2.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
                 <div>
-                  <h3 className="font-bold text-[15px] text-white tracking-tight">
+                  <h3 className="font-bold text-[16px] text-white tracking-tight">
                     {popupPlaylist.name}
                   </h3>
                   <p className="text-[11px] text-amber-200/80 font-mono">
@@ -312,52 +286,80 @@ export default function CassetteRack({
               </button>
             </div>
 
-            {/* Song List in Popup */}
-            <div className="overflow-y-auto py-3 space-y-1.5 custom-scrollbar flex-1 pr-1">
-              {popupPlaylist.tracks.map((track, idx) => {
-                const isThisPlaying =
-                  popupPlaylist.id === currentPlaylist.id && currentTrack.id === track.id;
-
-                return (
-                  <div
-                    key={track.id}
-                    onClick={() => {
-                      onSelectTrack(popupPlaylist, idx);
-                      setPopupPlaylist(null);
-                    }}
-                    className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all duration-200 ${
-                      isThisPlaying
-                        ? "bg-amber-400/30 text-amber-300 border border-amber-400/70 shadow-md"
-                        : "hover:bg-white/15 text-white/90 hover:text-white border border-transparent"
-                    }`}
+            {/* Search Input for Instant Filtering */}
+            <div className="pt-3 pb-2">
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-xs">🔍</span>
+                <input
+                  type="text"
+                  placeholder="Search tracks, artists, movies..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-white/10 border border-white/15 rounded-xl pl-8 pr-8 py-1.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400/70 transition-colors"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-xs"
                   >
-                    <div className="flex items-center gap-3 min-w-0 pr-2">
-                      <span
-                        className={`w-5 text-center text-xs font-mono shrink-0 ${
-                          isThisPlaying ? "text-amber-400 font-bold" : "text-white/50"
-                        }`}
-                      >
-                        {isThisPlaying ? "▶" : idx + 1}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold truncate leading-snug">{track.title}</p>
-                        <p className="text-[10.5px] text-white/60 truncate">
-                          {track.artist} {track.film ? `• ${track.film}` : ""}
-                        </p>
-                      </div>
-                    </div>
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
 
-                    <span className="text-[10px] font-mono text-white/60 shrink-0">
-                      {formatTime(track.duration)}
-                    </span>
-                  </div>
-                );
-              })}
+            {/* Song List in Popup */}
+            <div className="overflow-y-auto py-2 space-y-1.5 custom-scrollbar flex-1 pr-1">
+              {filteredTracks.length === 0 ? (
+                <div className="py-8 text-center text-white/40 text-xs font-mono">
+                  No matching songs found for "{searchQuery}"
+                </div>
+              ) : (
+                filteredTracks.map(({ track, originalIndex }) => {
+                  const isThisPlaying =
+                    popupPlaylist.id === currentPlaylist.id && currentTrack.id === track.id;
+
+                  return (
+                    <div
+                      key={track.id}
+                      onClick={() => {
+                        onSelectTrack(popupPlaylist, originalIndex);
+                        setPopupPlaylist(null);
+                      }}
+                      className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all duration-200 ${
+                        isThisPlaying
+                          ? "bg-amber-400/30 text-amber-300 border border-amber-400/70 shadow-md"
+                          : "hover:bg-white/15 text-white/90 hover:text-white border border-transparent"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 pr-2">
+                        <span
+                          className={`w-6 text-center text-xs font-mono shrink-0 ${
+                            isThisPlaying ? "text-amber-400 font-bold" : "text-white/50"
+                          }`}
+                        >
+                          {isThisPlaying ? "▶" : originalIndex + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold truncate leading-snug">{track.title}</p>
+                          <p className="text-[10.5px] text-white/60 truncate">
+                            {track.artist} {track.film ? `• ${track.film}` : ""}
+                          </p>
+                        </div>
+                      </div>
+
+                      <span className="text-[10px] font-mono text-white/60 shrink-0">
+                        {formatTime(track.duration)}
+                      </span>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
             {/* Popup Footer */}
             <div className="pt-2.5 border-t border-white/15 flex items-center justify-between text-[11px] text-white/60">
-              <span>Click any song to play immediately</span>
+              <span>Showing {filteredTracks.length} of {popupPlaylist.tracks.length} tracks</span>
               <button
                 onClick={() => setPopupPlaylist(null)}
                 className="text-amber-400 hover:text-amber-300 font-semibold px-3 py-1 rounded bg-amber-400/15 hover:bg-amber-400/25 transition-colors"

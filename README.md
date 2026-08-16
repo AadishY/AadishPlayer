@@ -23,12 +23,27 @@ Created with ❤️ by **Aadish Yadav**
 
 ---
 
+## 📻 Curated Radio Stations (153 Tracks)
+
+1. **`NotIndian` (Side A • 53 Tracks)**:
+   - Late night phonk, anime loops, sped up & lo-fi beats (*Sunflower*, *Misery.*, *Sweet little Bumble Bee*, *SugarCrash!*, *Cupid*, *Young Girl A*, *Brazilian Phonk*, *After Dark*, *Resonance*, *Memory Reboot*, etc.).
+   - Atmospheric cyberpunk & neon skyline scenes (*spider.webp*, *spider2.webp*).
+
+2. **`Indian Saloon` (Side B • 50 Tracks)**:
+   - Evergreen 2000s monsoon melodies & road trip anthems (*Iktara*, *Tum Se Hi*, *Phir Se Ud Chala*, *Kya Mujhe Pyar Hai*, *Zara Zara*, *Pee Loon*, *Aadat*, *Kabira*, *Kun Faya Kun*, *Mitwa*, etc.).
+   - Weighted background probability: **48% Saloon**, **48% House Stall DJ**, **4% Retro Scenes**.
+
+3. **`Chatpate Gaane` (Side C • 50 Tracks 🫦)**:
+   - Spicy desi dance hits, item bangers & party anthems (*Pink Lips*, *Paani Waala Dance*, *Aga Bai*, *Fevicol Se*, *Dilliwaali Girlfriend*, *Munni Badnaam*, *Character Dheela*, *Afghan Jalebi*, *Baby Doll*, *Chikni Chameli*, *Sheila Ki Jawani*, etc.).
+
+---
+
 ## ✨ Features
 
 - **📼 Right-Border Cassette / DVD Deck Bay**:
-  - Interactive multi-tape bay featuring all 3 stations (*NotIndian*, *Indian Saloon*, and *Chatpate Gaane*).
+  - Interactive multi-tape bay featuring all 3 stations.
   - Active tape pops out with real-time spinning dual spools and direct track navigation buttons.
-  - Dedicated **Song Selection Popup Modal** with track durations, movie info, and one-tap playback.
+  - Dedicated **Song Selection Popup Modal** with search filter, track durations, movie info, and one-tap playback.
 - **💿 Rotating Vinyl Turntable**:
   - Tactile interactive vinyl disc with spring feedback and tap-to-play/pause.
   - Smooth seekbar, responsive track metadata, volume slider with live amplitude feedback, and minimizeable live YouTube canvas.
@@ -41,12 +56,11 @@ Created with ❤️ by **Aadish Yadav**
   - **Fullscreen Toggle** button for immersive desktop listening.
 - **⏱️ Live Lucknow Studio Clock**:
   - Click-to-toggle between **12-Hour IST** (with AM/PM) and **24-Hour Studio Time**.
-- **▶️ Glassmorphic YouTube Playlist Access**:
-  - Header button directly opening the current station's playlist on YouTube.
+- **▶️ Glassmorphic YouTube / Spotify Playlist Access**:
+  - Header button directly opening the current station's playlist.
 - **⚡ Ultra Performance & Instant Preloading**:
-  - All backdrop scenes preloaded on mount for 0ms transition latency.
-  - 4x weighted selection for the classic `House.webp` urban DJ vinyl background.
-  - Turbopack-powered dev server (`next dev --turbo`) with zero cache conflicts.
+  - All 12 backdrop scenes preloaded on mount for 0ms transition latency.
+  - Turbopack-powered dev server (`next dev --turbo`) with clean SVG vector favicons.
   - 100% responsive on mobile, tablet, and ultra-wide screens.
 
 ---
