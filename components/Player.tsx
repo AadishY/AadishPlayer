@@ -29,8 +29,8 @@ interface VinylDiscProps {
 }
 
 function VinylDisc({ size = "md", isPlaying, coverUrl, trackTitle, onTapDisc }: VinylDiscProps) {
-  const sizeClasses = size === "md" ? "w-20 h-20" : "w-16 h-16";
-  const labelSizeClasses = size === "md" ? "w-9 h-9" : "w-7 h-7";
+  const sizeClasses = size === "md" ? "w-20 h-20" : "w-12 h-12";
+  const labelSizeClasses = size === "md" ? "w-9 h-9" : "w-5 h-5";
 
   return (
     <div
@@ -449,6 +449,13 @@ export default function Player({
               lastLoadedVideoIdRef.current = currentTrack?.videoId || null;
               event.target.setVolume(volume);
 
+              // Set lowest stream quality (144p tiny) for fastest loading & zero audio buffering latency
+              if (typeof event.target.setPlaybackQuality === "function") {
+                try {
+                  event.target.setPlaybackQuality("tiny");
+                } catch (_) {}
+              }
+
               if (pendingPlayRef.current) {
                 pendingPlayRef.current = false;
                 event.target.playVideo();
@@ -459,12 +466,25 @@ export default function Player({
               const state = event.data;
               if (state === window.YT.PlayerState.PLAYING) {
                 setIsPlaying(true);
+                // Ensure 144p tiny quality during playback
+                if (typeof event.target.setPlaybackQuality === "function") {
+                  try {
+                    event.target.setPlaybackQuality("tiny");
+                  } catch (_) {}
+                }
               } else if (
                 state === window.YT.PlayerState.PAUSED ||
                 state === window.YT.PlayerState.BUFFERING
               ) {
                 if (state === window.YT.PlayerState.PAUSED) {
                   setIsPlaying(false);
+                }
+                if (state === window.YT.PlayerState.BUFFERING) {
+                  if (typeof event.target.setPlaybackQuality === "function") {
+                    try {
+                      event.target.setPlaybackQuality("tiny");
+                    } catch (_) {}
+                  }
                 }
               } else if (state === window.YT.PlayerState.ENDED) {
                 if (handleNextRef.current) {
@@ -517,7 +537,7 @@ export default function Player({
     };
   }, []);
 
-  // When track actually changes, load new video
+  // When track actually changes, load new video in 144p (tiny) for instant audio playback
   useEffect(() => {
     if (!isReadyRef.current || !playerRef.current || !currentTrack) return;
 
@@ -528,9 +548,24 @@ export default function Player({
 
     try {
       if (isPlaying) {
-        playerRef.current.loadVideoById(currentTrack.videoId);
+        if (typeof playerRef.current.loadVideoById === "function") {
+          playerRef.current.loadVideoById({
+            videoId: currentTrack.videoId,
+            startSeconds: 0,
+            suggestedQuality: "tiny",
+          });
+        }
+        if (typeof playerRef.current.setPlaybackQuality === "function") {
+          playerRef.current.setPlaybackQuality("tiny");
+        }
       } else {
-        playerRef.current.cueVideoById(currentTrack.videoId);
+        if (typeof playerRef.current.cueVideoById === "function") {
+          playerRef.current.cueVideoById({
+            videoId: currentTrack.videoId,
+            startSeconds: 0,
+            suggestedQuality: "tiny",
+          });
+        }
       }
     } catch (e) {
       console.error("Failed to load video:", e);
@@ -638,11 +673,11 @@ export default function Player({
     <div className="w-full max-w-xl flex flex-col items-center gap-2">
       {/* 
         VISIBLE YOUTUBE IFRAME CANVAS / ARTWORK SLOT 
-        Rendered visibly on screen to fully satisfy YouTube Developer Policies
+        Fully hidden when minimized (0px height, 0 opacity) to prevent any stray black bar
       */}
       <div
         className={`w-full transition-all duration-500 overflow-hidden ${
-          showVideoPlayer ? "max-h-[260px] opacity-100 mb-2" : "max-h-[85px] opacity-90 sm:max-h-0 sm:opacity-0"
+          showVideoPlayer ? "max-h-[260px] opacity-100 mb-2" : "max-h-0 opacity-0 mb-0 pointer-events-none"
         }`}
       >
         <div className="glass-card rounded-2xl p-2 relative shadow-2xl overflow-hidden border border-white/15">
@@ -745,11 +780,11 @@ export default function Player({
       </div>
 
       {/* ======================================================== */}
-      {/* MOBILE PLAYER (sm:hidden) — Stacked rounded-[26px] Card */}
+      {/* MOBILE PLAYER (sm:hidden) — Compact Scaled-Down Glass Card */}
       {/* ======================================================== */}
-      <div className="sm:hidden w-full glass-card rounded-[26px] p-4 flex flex-col gap-3 select-none shadow-[0_16px_48px_-12px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.2)]">
-        {/* Row 1: 64px Vinyl + Title & Artist */}
-        <div className="flex items-center gap-3.5">
+      <div className="sm:hidden w-full glass-card rounded-2xl p-2.5 sm:p-3 flex flex-col gap-2 select-none shadow-[0_12px_32px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.2)]">
+        {/* Row 1: Scaled Vinyl + Title & Artist */}
+        <div className="flex items-center gap-2.5">
           <VinylDisc
             size="sm"
             isPlaying={isPlaying}
@@ -759,22 +794,36 @@ export default function Player({
           />
           <div className="flex-1 min-w-0">
             <TrackInfo track={currentTrack} />
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10.5px] font-medium text-amber-400/90 flex items-center gap-1">
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[10px] font-medium text-amber-400/90 flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                 {currentPlaylist.name}
               </span>
             </div>
           </div>
-          <button
-            onClick={() => setShowVideoPlayer((p) => !p)}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10"
-            aria-label="Toggle live video screen"
-          >
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zm-11-7v4l5-2-5-2z" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            {/* Mobile Song List Button */}
+            <button
+              onClick={onOpenPlaylistDrawer}
+              title="Open song list"
+              className="px-2 py-1 rounded-full bg-white/10 hover:bg-white/20 border border-white/15 text-[10px] font-mono text-amber-300 flex items-center gap-1 active:scale-95 transition-all shadow-sm"
+              aria-label="Open song list drawer"
+            >
+              <span>♫</span>
+              <span>{currentPlaylist.tracks.length}</span>
+            </button>
+
+            {/* Mobile Visualizer Toggle */}
+            <button
+              onClick={() => setShowVideoPlayer((p) => !p)}
+              className="w-7 h-7 flex items-center justify-center rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              aria-label="Toggle live video screen"
+            >
+              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                <path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12zm-11-7v4l5-2-5-2z" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Row 2: Full-width Seek Bar */}
@@ -787,8 +836,8 @@ export default function Player({
         </div>
 
         {/* Row 3: Elapsed/duration on left, Transport centred, Audio control */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="text-[10.5px] tabular-nums text-white/70 font-medium w-14 shrink-0">
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="text-[9.5px] tabular-nums text-white/70 font-mono font-medium shrink-0">
             <span>{formatTime(currentTime)}</span>
             <span className="text-white/40">/</span>
             <span>{formatTime(duration || currentTrack.duration || 0)}</span>

@@ -22,6 +22,7 @@ export default function CassetteRack({
   onSelectTrack,
   onNextTrack,
   onPrevTrack,
+  onOpenPlaylistDrawer,
 }: CassetteRackProps) {
   const [popupPlaylist, setPopupPlaylist] = useState<Playlist | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -62,7 +63,7 @@ export default function CassetteRack({
   return (
     <>
       {/* ======================================================== */}
-      {/* DESKTOP: Scaled-Down Right Border Docked (Active POPUP, Inactive POPDOWN) */}
+      {/* DESKTOP: Scaled-Down Right Border Docked Cassette Rack */}
       {/* ======================================================== */}
       <aside
         aria-label="Cassette & DVD Deck Bay"
@@ -216,9 +217,9 @@ export default function CassetteRack({
       </aside>
 
       {/* ======================================================== */}
-      {/* MOBILE: Horizontal Mini Cassette Rack docked at Bottom */}
+      {/* MOBILE: Horizontal Mini DVD & Cassette Rack docked at Bottom */}
       {/* ======================================================== */}
-      <div className="md:hidden flex items-center justify-center gap-2 w-full px-2 py-1">
+      <div className="md:hidden flex items-center justify-center gap-1.5 w-full px-1 py-1">
         {PLAYLISTS.map((playlist) => {
           const isActive = playlist.id === currentPlaylist.id;
 
@@ -230,31 +231,66 @@ export default function CassetteRack({
                   onSelectPlaylist(playlist);
                 }
               }}
-              className={`flex-1 min-w-0 p-2 rounded-xl border flex flex-col items-center justify-center transition-all duration-300 cursor-pointer ${
+              className={`flex-1 min-w-0 p-1.5 rounded-2xl glass-card transition-all duration-300 cursor-pointer active:scale-95 select-none ${
                 isActive
-                  ? "border-amber-400 bg-white/20 shadow-[0_4px_16px_rgba(245,158,11,0.3)] scale-[1.02]"
-                  : "border-white/10 bg-black/40 hover:bg-black/60"
+                  ? "border-2 border-amber-400 bg-white/[0.22] shadow-[0_0_24px_rgba(251,191,36,0.65),inset_0_1px_0_rgba(255,255,255,0.6)] ring-2 ring-amber-400/60 scale-[1.03] z-10"
+                  : "border border-white/10 bg-black/45 hover:bg-white/[0.08] opacity-75 hover:opacity-100"
               }`}
             >
-              <div className="flex items-center gap-1.5 w-full justify-center">
+              {/* Mini DVD / Cassette Spool Visual */}
+              <div
+                className={`w-full h-7 rounded-lg overflow-hidden relative bg-black/60 mb-1 flex items-center justify-center shadow-inner ${
+                  isActive ? "border border-amber-400/60" : "border border-white/15"
+                }`}
+              >
+                {/* Background Gradient */}
+                <div className={`absolute inset-0 bg-gradient-to-r ${playlist.cassetteColor} ${isActive ? "opacity-90" : "opacity-60"}`} />
+
+                {/* Cassette Dual Spools & Tape Bridge */}
+                <div className="relative z-10 flex items-center justify-center gap-2 bg-black/70 px-2 py-0.5 rounded-full border border-white/20 shadow-sm">
+                  {/* Left Hub */}
+                  <div className="relative w-3.5 h-3.5 rounded-full border border-white/40 flex items-center justify-center bg-black">
+                    <div
+                      className={`w-2 h-2 rounded-full border border-dashed border-amber-300 ${
+                        isActive && isPlaying ? "animate-[spin_4s_linear_infinite]" : ""
+                      }`}
+                    />
+                    <div className="w-0.5 h-0.5 rounded-full bg-white" />
+                  </div>
+
+                  {/* Tape Bridge */}
+                  <div className="w-2.5 h-0.5 bg-amber-500/70 rounded-full" />
+
+                  {/* Right Hub */}
+                  <div className="relative w-3.5 h-3.5 rounded-full border border-white/40 flex items-center justify-center bg-black">
+                    <div
+                      className={`w-2 h-2 rounded-full border border-dashed border-amber-300 ${
+                        isActive && isPlaying ? "animate-[spin_4s_linear_infinite]" : ""
+                      }`}
+                    />
+                    <div className="w-0.5 h-0.5 rounded-full bg-white" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Station Name & Active Dot */}
+              <div className="flex items-center gap-1 w-full justify-center">
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isActive ? "bg-amber-400 animate-pulse" : "bg-white/30"
+                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                    isActive ? "bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,1)]" : "bg-white/30"
                   }`}
                 />
-                <span className="font-bold text-[11px] text-white truncate text-center">
+                <span className={`font-bold text-[10.5px] sm:text-[11.5px] truncate text-center leading-tight ${
+                  isActive ? "text-amber-200" : "text-white"
+                }`}>
                   {playlist.name}
                 </span>
               </div>
 
-              <button
-                onClick={(e) => handleOpenSongPopup(playlist, e)}
-                className="text-[9px] font-mono text-amber-300/90 my-1 underline"
-              >
-                {playlist.tracks.length} Songs
-              </button>
-
-              <span className="text-[8px] font-mono text-white/60">
+              {/* Clean Status Badge */}
+              <span className={`text-[7.5px] font-mono font-bold mt-0.5 uppercase tracking-wider ${
+                isActive ? "text-amber-300 font-extrabold" : "text-white/50"
+              }`}>
                 {isActive ? "✦ LOADED" : "⬇ RECESS"}
               </span>
             </div>
@@ -270,123 +306,87 @@ export default function CassetteRack({
           {/* Click outside to close */}
           <div className="absolute inset-0" onClick={() => setPopupPlaylist(null)} />
 
-          <div className="relative w-full max-w-lg glass-card rounded-[26px] p-5 sm:p-6 shadow-2xl border border-amber-400/50 z-10 flex flex-col max-h-[85vh] overflow-hidden">
-            {/* Popup Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-white/15">
-              <div className="flex items-center gap-2.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,0.9)]" />
-                <div>
-                  <h3 className="font-bold text-[16px] text-white tracking-tight">
-                    {popupPlaylist.name}
-                  </h3>
-                  <p className="text-[11px] text-amber-200/80 font-mono">
-                    {popupPlaylist.cassetteLabel} • {popupPlaylist.tracks.length} Tracks
-                  </p>
-                </div>
+          <div className="relative w-full max-w-md bg-[#121217]/95 border border-white/20 rounded-2xl shadow-2xl p-4 z-10 flex flex-col max-h-[85vh] backdrop-blur-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${popupPlaylist.cassetteColor}`} />
+                <h3 className="font-bold text-sm text-white">{popupPlaylist.name}</h3>
+                <span className="text-xs font-mono text-white/50">({popupPlaylist.tracks.length} songs)</span>
               </div>
-
               <button
                 onClick={() => setPopupPlaylist(null)}
-                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 text-white/80 hover:text-white flex items-center justify-center text-xs transition-colors"
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs text-white/70 hover:text-white transition-colors"
               >
                 ✕
               </button>
             </div>
 
-            {/* Search Input for Instant Filtering */}
-            <div className="pt-3 pb-2">
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 text-xs">🔍</span>
-                <input
-                  type="text"
-                  placeholder="Search tracks, artists, movies..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/10 border border-white/15 rounded-xl pl-8 pr-8 py-1.5 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400/70 transition-colors"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-xs"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+            {/* Search Input */}
+            <div className="my-3">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search song, artist, film..."
+                className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-amber-400/70"
+              />
             </div>
 
-            {/* Song List in Popup */}
-            <div className="overflow-y-auto py-2 space-y-1.5 custom-scrollbar flex-1 pr-1">
-              {displayedTracks.length === 0 ? (
-                <div className="py-8 text-center text-white/40 text-xs font-mono">
-                  No matching songs found for "{searchQuery}"
-                </div>
-              ) : (
-                displayedTracks.map(({ track, originalIndex }) => {
-                  const isThisPlaying =
-                    popupPlaylist.id === currentPlaylist.id && currentTrack.id === track.id;
+            {/* Songs List */}
+            <div className="flex-1 overflow-y-auto pr-1 space-y-1.5 no-scrollbar max-h-[50vh]">
+              {displayedTracks.map(({ track, originalIndex }, idx) => {
+                const isCurrentlyPlaying =
+                  popupPlaylist.id === currentPlaylist.id && track.id === currentTrack.id;
 
-                  return (
-                    <div
-                      key={track.id}
-                      onClick={() => {
-                        onSelectTrack(popupPlaylist, originalIndex);
-                        setPopupPlaylist(null);
-                      }}
-                      className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all duration-200 ${
-                        isThisPlaying
-                          ? "bg-amber-400/30 text-amber-300 border border-amber-400/70 shadow-md"
-                          : "hover:bg-white/15 text-white/90 hover:text-white border border-transparent"
-                      }`}
-                    >
-                      <div className="flex items-center gap-3 min-w-0 pr-2">
-                        <span
-                          className={`w-6 text-center text-xs font-mono shrink-0 ${
-                            isThisPlaying ? "text-amber-400 font-bold" : "text-white/50"
-                          }`}
-                        >
-                          {isThisPlaying ? "▶" : originalIndex + 1}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-xs font-semibold truncate leading-snug">{track.title}</p>
-                          <p className="text-[10.5px] text-white/60 truncate">
-                            {track.artist} {track.film ? `• ${track.film}` : ""}
-                          </p>
-                        </div>
-                      </div>
-
-                      <span className="text-[10px] font-mono text-white/60 shrink-0">
-                        {formatTime(track.duration)}
+                return (
+                  <div
+                    key={track.id}
+                    onClick={() => {
+                      onSelectTrack(popupPlaylist, originalIndex);
+                      setPopupPlaylist(null);
+                    }}
+                    className={`flex items-center justify-between p-2 rounded-xl transition-all cursor-pointer ${
+                      isCurrentlyPlaying
+                        ? "bg-amber-400/20 border border-amber-400/50 text-amber-200"
+                        : "bg-white/[0.04] hover:bg-white/[0.1] border border-white/5 text-white/80"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-[10px] font-mono text-white/40 w-4 text-right">
+                        {originalIndex + 1}
                       </span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold truncate text-white">{track.title}</p>
+                        <p className="text-[10px] text-white/50 truncate">
+                          {track.artist} {track.film ? `• ${track.film}` : ""}
+                        </p>
+                      </div>
                     </div>
-                  );
-                })
-              )}
 
-              {/* Incremental "Show More (+10)" button */}
-              {!searchQuery && visibleCount < filteredTracks.length && (
+                    <span className="text-[10px] font-mono text-white/40 ml-2">
+                      {formatTime(track.duration)}
+                    </span>
+                  </div>
+                );
+              })}
+
+              {displayedTracks.length === 0 && (
+                <div className="text-center py-6 text-xs text-white/40">No songs match your search</div>
+              )}
+            </div>
+
+            {/* Incremental Pagination (Show More +10) */}
+            {!searchQuery.trim() && visibleCount < filteredTracks.length && (
+              <div className="pt-3 border-t border-white/10 flex justify-center">
                 <button
                   onClick={() => setVisibleCount((prev) => prev + 10)}
-                  className="w-full py-2.5 px-3 mt-2 rounded-xl bg-white/10 hover:bg-amber-400/20 text-amber-300 hover:text-amber-200 border border-white/10 hover:border-amber-400/50 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-[0.99] shadow-sm"
+                  className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold text-amber-300 transition-all border border-white/10 hover:border-amber-400/40 active:scale-95"
                 >
-                  <span>Show More (+10)</span>
-                  <span className="text-[10px] text-white/50 font-mono">
-                    • {filteredTracks.length - visibleCount} more
-                  </span>
+                  Show More (+10) • {filteredTracks.length - visibleCount} remaining
                 </button>
-              )}
-            </div>
-
-            {/* Popup Footer */}
-            <div className="pt-2.5 border-t border-white/15 flex items-center justify-between text-[11px] text-white/60">
-              <span>Showing {displayedTracks.length} of {popupPlaylist.tracks.length} tracks</span>
-              <button
-                onClick={() => setPopupPlaylist(null)}
-                className="text-amber-400 hover:text-amber-300 font-semibold px-3 py-1 rounded bg-amber-400/15 hover:bg-amber-400/25 transition-colors"
-              >
-                Close
-              </button>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}

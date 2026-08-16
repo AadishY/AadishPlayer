@@ -33,7 +33,7 @@ export default function LeftControls({ onRandomBg }: LeftControlsProps) {
   return (
     <aside
       aria-label="Left Screen Quick Controls"
-      className="fixed left-0 top-1/2 -translate-y-1/2 z-30 flex flex-col gap-2.5 items-start select-none pl-0"
+      className="fixed left-0 top-[30%] sm:top-[35%] z-30 flex flex-col gap-2.5 items-start select-none pl-0"
     >
       {/* 90-Degree Rotated Scene Randomizer Button on Leftmost Border (Glassmorphic) */}
       <button

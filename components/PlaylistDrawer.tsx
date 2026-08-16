@@ -265,42 +265,7 @@ export default function PlaylistDrawer({
           </>
         )}
 
-        {/* Footer: Creator & Deployments */}
-        <div className="pt-3 mt-1 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-white/60 shrink-0">
-          <div className="flex items-center gap-2">
-            <span>
-              Crafted by{" "}
-              <a
-                href="https://github.com/AadishY"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-amber-400 hover:underline font-semibold"
-              >
-                Aadish Yadav (@AadishY)
-              </a>
-            </span>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <a
-              href="https://aadishplayer.pages.dev/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-amber-300 transition-colors"
-            >
-              Cloudflare Pages ↗
-            </a>
-            <span>•</span>
-            <a
-              href="https://aadishplayer.vercel.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-amber-300 transition-colors"
-            >
-              Vercel ↗
-            </a>
-          </div>
-        </div>
+        
       </div>
     </div>
   );

@@ -18,6 +18,7 @@ export default function NostalgiaApp() {
   const [selectedTrackIndex, setSelectedTrackIndex] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [dullOpacity, setDullOpacity] = useState<number>(0);
 
   // Client-side mount: pick random background from allowed pool & preload all images
   useEffect(() => {
@@ -107,23 +108,21 @@ export default function NostalgiaApp() {
         style={{ backgroundImage: `url('${activeBg}')` }}
       />
 
-      {/* Top Bar (Lucknow Clock, GitHub & YouTube Playlist Button) */}
-      <TopBar currentPlaylist={currentPlaylist} />
+      {/* Dull Mode Black Dimming Overlay (-z-15) */}
+      <div
+        className="fixed inset-0 -z-15 bg-black transition-opacity duration-300 pointer-events-none"
+        style={{ opacity: dullOpacity / 100 }}
+      />
+
+      {/* Top Bar (Lucknow Clock, Dull Mode, GitHub & YouTube Playlist Button) */}
+      <TopBar
+        currentPlaylist={currentPlaylist}
+        dullOpacity={dullOpacity}
+        onDullOpacityChange={setDullOpacity}
+      />
 
       {/* Leftmost Border-Docked Vertical Controls (Rotated 90° Scene & Fullscreen) */}
       <LeftControls onRandomBg={handleRandomBg} />
-
-      {/* Rightmost Border-Docked Vertical Cassette / DVD Rack (Desktop) */}
-      <CassetteRack
-        currentPlaylist={currentPlaylist}
-        currentTrack={currentTrack}
-        isPlaying={isPlaying}
-        onSelectPlaylist={handlePlaylistChange}
-        onSelectTrack={handleSelectTrack}
-        onNextTrack={handleNextTrack}
-        onPrevTrack={handlePrevTrack}
-        onOpenPlaylistDrawer={() => setIsDrawerOpen(true)}
-      />
 
       {/* Upper Layer: Massive Cinematic Typography */}
       <div className="flex-1 flex flex-col items-center justify-start pt-10 sm:pt-12 md:pt-14 pb-0 z-10 px-4">
@@ -131,7 +130,7 @@ export default function NostalgiaApp() {
       </div>
 
       {/* Bottom Area: Centerpiece Vinyl Player + Mobile Cassette Bay */}
-      <div className="w-full flex flex-col items-center justify-end gap-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] px-[max(1rem,env(safe-area-inset-left))] z-30">
+      <div className="w-full flex flex-col items-center justify-end gap-2.5 pb-[max(1.25rem,env(safe-area-inset-bottom))] px-[max(0.75rem,env(safe-area-inset-left))] z-30">
         {/* Main Centerpiece Vinyl Player */}
         <div className="w-full max-w-xl">
           <Player
@@ -145,8 +144,8 @@ export default function NostalgiaApp() {
           />
         </div>
 
-        {/* Mobile Cassette Deck Bay (docked beneath player on mobile screens) */}
-        <div className="md:hidden w-full max-w-xl">
+        {/* Cassette Rack (Desktop: Fixed Right Border Dock | Mobile: Clean Bottom Station Bay) */}
+        <div className="w-full max-w-xl">
           <CassetteRack
             currentPlaylist={currentPlaylist}
             currentTrack={currentTrack}
