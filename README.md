@@ -4,6 +4,25 @@ A cozy, single-page retro web radio station crafted with **luminous glassmorphis
 
 ---
 
+## 🌐 Live Deployments
+
+- 🚀 **Primary Live Demo (Cloudflare Pages)**: [https://aadishplayer.pages.dev/](https://aadishplayer.pages.dev/)
+- ⚡ **Alternate Mirror (Vercel)**: [https://aadishplayer.vercel.app/](https://aadishplayer.vercel.app/)
+- 📦 **GitHub Repository**: [https://github.com/AadishY/AadishPLayer](https://github.com/AadishY/AadishPLayer)
+
+---
+
+## 👨‍💻 About the Creator
+
+Created with ❤️ by **Aadish Yadav**
+
+- **GitHub Profile**: [@AadishY](https://github.com/AadishY)
+- **Project Repository**: [AadishPlayer](https://github.com/AadishY/AadishPLayer)
+- **Live URL**: [aadishplayer.pages.dev](https://aadishplayer.pages.dev/)
+- **Mirror**: [aadishplayer.vercel.app](https://aadishplayer.vercel.app/)
+
+---
+
 ## ✨ Features
 
 - **📼 Right-Border Cassette / DVD Deck Bay**:
@@ -26,6 +45,7 @@ A cozy, single-page retro web radio station crafted with **luminous glassmorphis
   - Header button directly opening the current station's playlist on YouTube.
 - **⚡ Ultra Performance & Instant Preloading**:
   - All backdrop scenes preloaded on mount for 0ms transition latency.
+  - 4x weighted selection for the classic `House.webp` urban DJ vinyl background.
   - Turbopack-powered dev server (`next dev --turbo`) with zero cache conflicts.
   - 100% responsive on mobile, tablet, and ultra-wide screens.
 
@@ -70,27 +90,22 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🌐 Deployment Compatibility
+## 🌐 Cloud Deployment
+
+### Deploying to Cloudflare Pages (Recommended)
+
+1. Connect your GitHub repository [https://github.com/AadishY/AadishPLayer](https://github.com/AadishY/AadishPLayer) in Cloudflare Pages.
+2. Configure build settings:
+   - **Framework preset**: `Next.js (Static HTML Export)` or `None`
+   - **Build command**: `npm run build`
+   - **Build output directory**: `out`
+3. Click **Save and Deploy**.
 
 ### Deploying to Vercel
 
-1. Push your code to GitHub: [https://github.com/AadishY/AadishPLayer](https://github.com/AadishY/AadishPLayer)
-2. Import the repository in [Vercel Dashboard](https://vercel.com/new).
-3. Vercel automatically detects Next.js:
-   - **Framework Preset**: Next.js
-   - **Build Command**: `npm run build`
-   - **Output Directory**: `.next`
-4. Click **Deploy**.
-
-### Deploying to Cloudflare Pages
-
-1. In Cloudflare Dashboard, navigate to **Compute (Workers & Pages)** > **Create application** > **Pages** > **Connect to Git**.
-2. Select `AadishPLayer` repository.
-3. Configure build settings:
-   - **Framework preset**: Next.js
-   - **Build command**: `npx @cloudflare/next-on-pages` (or `npm run build`)
-   - **Build output directory**: `.vercel/output/static` (or `.next`)
-4. Click **Save and Deploy**.
+1. Import the repository in [Vercel Dashboard](https://vercel.com/new).
+2. Framework preset: `Next.js`
+3. Click **Deploy**.
 
 ---
 
@@ -99,7 +114,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - [Next.js 15 App Router](https://nextjs.org/)
 - [React 19](https://react.dev/)
 - [Tailwind CSS v4](https://tailwindcss.com/)
-- [Google Fonts](https://fonts.google.com/) (Rozha One, Yatra One, Inter)
+- [Google Fonts](https://fonts.google.com/) (Rozha One, Yatra One, Inter, Outfit)
 - [YouTube IFrame API](https://developers.google.com/youtube/iframe_api_reference)
 - [Vercel Analytics & Speed Insights](https://vercel.com/analytics)
 
@@ -107,4 +122,4 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 📜 License
 
-MIT License — Created with ❤️ by [AadishY](https://github.com/AadishY/AadishPLayer)
+MIT License — Created with ❤️ by [Aadish Yadav](https://github.com/AadishY)

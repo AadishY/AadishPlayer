@@ -178,15 +178,54 @@ export default function PlaylistDrawer({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="pt-3 border-t border-white/10 flex justify-between items-center text-[11px] text-white/50 shrink-0">
-          <span>AadishPlayer • YouTube IFrame Engine</span>
-          <button
-            onClick={onClose}
-            className="text-amber-400 hover:text-amber-300 font-medium px-3 py-1 rounded bg-amber-400/10 hover:bg-amber-400/20 transition-colors"
-          >
-            Done
-          </button>
+        {/* About Creator & Live Deployments */}
+        <div className="pt-3 border-t border-white/10 flex flex-col gap-2 shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-white/70">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-white">Created by</span>
+              <a
+                href="https://github.com/AadishY"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-amber-400 hover:text-amber-300 font-bold underline"
+              >
+                Aadish Yadav (@AadishY)
+              </a>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <a
+                href="https://aadishplayer.pages.dev/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/70 hover:text-white hover:underline flex items-center gap-1"
+                title="Cloudflare Pages Live Deployment"
+              >
+                <span>🌐 Cloudflare</span>
+                <span className="text-[9px]">↗</span>
+              </a>
+              <a
+                href="https://aadishplayer.vercel.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-white/70 hover:text-white hover:underline flex items-center gap-1"
+                title="Vercel Live Mirror"
+              >
+                <span>▲ Vercel</span>
+                <span className="text-[9px]">↗</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center text-[10.5px] text-white/40 pt-1">
+            <span>AadishPlayer • 24/7 Nostalgia Radio</span>
+            <button
+              onClick={onClose}
+              className="text-amber-400 hover:text-amber-300 font-semibold px-3 py-1 rounded bg-amber-400/10 hover:bg-amber-400/20 transition-colors"
+            >
+              Done
+            </button>
+          </div>
         </div>
       </div>
     </div>
