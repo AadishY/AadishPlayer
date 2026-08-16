@@ -12,7 +12,7 @@ interface LeftControlsProps {
 export default function LeftControls({
   onRandomBg,
   forceShow,
-  isDynamic = true,
+  isDynamic = false,
   onToggleDynamic,
 }: LeftControlsProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);

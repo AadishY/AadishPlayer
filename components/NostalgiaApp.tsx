@@ -21,7 +21,7 @@ export default function NostalgiaApp() {
   const [dullOpacity, setDullOpacity] = useState<number>(15);
   const [forceShowAll, setForceShowAll] = useState<boolean>(true);
   const [isPlayerNear, setIsPlayerNear] = useState<boolean>(false);
-  const [isDynamic, setIsDynamic] = useState<boolean>(true);
+  const [isDynamic, setIsDynamic] = useState<boolean>(false);
 
   // Load saved user settings from localStorage on client mount
   useEffect(() => {
