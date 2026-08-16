@@ -18,7 +18,62 @@ export default function NostalgiaApp() {
   const [selectedTrackIndex, setSelectedTrackIndex] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [dullOpacity, setDullOpacity] = useState<number>(0);
+  const [dullOpacity, setDullOpacity] = useState<number>(15);
+  const [forceShowAll, setForceShowAll] = useState<boolean>(true);
+  const [isPlayerNear, setIsPlayerNear] = useState<boolean>(false);
+  const [isDynamic, setIsDynamic] = useState<boolean>(true);
+
+  // Load saved user settings from localStorage on client mount
+  useEffect(() => {
+    try {
+      const savedDull = localStorage.getItem("aadishplayer_dullness");
+      if (savedDull !== null) {
+        const parsed = Number(savedDull);
+        if (!isNaN(parsed) && parsed >= 0 && parsed <= 90) {
+          setDullOpacity(parsed);
+        }
+      }
+
+      const savedDynamic = localStorage.getItem("aadishplayer_dynamic");
+      if (savedDynamic !== null) {
+        setIsDynamic(savedDynamic === "true");
+      }
+    } catch (e) {
+      console.warn("Could not load saved settings:", e);
+    }
+  }, []);
+
+  // Show all side buttons & full player scale for 10 seconds on site mount & on playlist change
+  useEffect(() => {
+    setForceShowAll(true);
+    const timer = setTimeout(() => {
+      setForceShowAll(false);
+    }, 10000); // 10 seconds
+    return () => clearTimeout(timer);
+  }, [currentPlaylist.id]);
+
+  // High-performance RAF-throttled proximity detection for smooth 60fps scaling
+  useEffect(() => {
+    let rafId: number | null = null;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (window.innerWidth < 768) {
+        setIsPlayerNear(true);
+        return;
+      }
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        setIsPlayerNear(e.clientY > window.innerHeight - 240);
+        rafId = null;
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   // Client-side mount: pick random background from allowed pool & preload all images
   useEffect(() => {
@@ -49,6 +104,28 @@ export default function NostalgiaApp() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
+  };
+
+  const handleDullOpacityChange = (val: number) => {
+    setDullOpacity(val);
+    try {
+      localStorage.setItem("aadishplayer_dullness", String(val));
+    } catch (e) {
+      console.warn("Could not save dullness:", e);
+    }
+  };
+
+  const handleToggleDynamic = () => {
+    setIsDynamic((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("aadishplayer_dynamic", String(next));
+      } catch (e) {
+        console.warn("Could not save dynamic setting:", e);
+      }
+      showToast(next ? "Dynamic Auto-Hide: ON" : "Dynamic Auto-Hide: OFF (Always Visible)");
+      return next;
+    });
   };
 
   // Manual Random Background Button Click with 48/48/4 probability distribution
@@ -100,6 +177,9 @@ export default function NostalgiaApp() {
     setSelectedTrackIndex(prevIndex);
   };
 
+  const shouldForceShow = !isDynamic || forceShowAll;
+  const isPlayerFull = !isDynamic || forceShowAll || isPlayerNear;
+
   return (
     <>
       {/* Dynamic Background Scene Layer (-z-20) with smooth 1000ms transition */}
@@ -118,11 +198,17 @@ export default function NostalgiaApp() {
       <TopBar
         currentPlaylist={currentPlaylist}
         dullOpacity={dullOpacity}
-        onDullOpacityChange={setDullOpacity}
+        onDullOpacityChange={handleDullOpacityChange}
+        forceShow={shouldForceShow}
       />
 
-      {/* Leftmost Border-Docked Vertical Controls (Rotated 90° Scene & Fullscreen) */}
-      <LeftControls onRandomBg={handleRandomBg} />
+      {/* Leftmost Border-Docked Vertical Controls (Dynamic ON/OFF, Scene & Fullscreen) */}
+      <LeftControls
+        onRandomBg={handleRandomBg}
+        forceShow={forceShowAll}
+        isDynamic={isDynamic}
+        onToggleDynamic={handleToggleDynamic}
+      />
 
       {/* Upper Layer: Massive Cinematic Typography */}
       <div className="flex-1 flex flex-col items-center justify-start pt-10 sm:pt-12 md:pt-14 pb-0 z-10 px-4">
@@ -131,8 +217,15 @@ export default function NostalgiaApp() {
 
       {/* Bottom Area: Centerpiece Vinyl Player + Mobile Cassette Bay */}
       <div className="w-full flex flex-col items-center justify-end gap-2.5 pb-[max(1.25rem,env(safe-area-inset-bottom))] px-[max(0.75rem,env(safe-area-inset-left))] z-30">
-        {/* Main Centerpiece Vinyl Player */}
-        <div className="w-full max-w-xl">
+        {/* Main Centerpiece Vinyl Player (Ultra-smooth scale down to 76% when idle) */}
+        <div
+          onMouseEnter={() => setIsPlayerNear(true)}
+          className={`w-full max-w-xl transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom will-change-[transform,opacity] ${
+            isPlayerFull
+              ? "scale-100 opacity-100 drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+              : "md:scale-[0.76] md:opacity-60 md:hover:scale-100 md:hover:opacity-100"
+          }`}
+        >
           <Player
             currentPlaylist={currentPlaylist}
             selectedTrackIndex={selectedTrackIndex}
@@ -155,6 +248,7 @@ export default function NostalgiaApp() {
             onNextTrack={handleNextTrack}
             onPrevTrack={handlePrevTrack}
             onOpenPlaylistDrawer={() => setIsDrawerOpen(true)}
+            forceShow={shouldForceShow}
           />
         </div>
       </div>

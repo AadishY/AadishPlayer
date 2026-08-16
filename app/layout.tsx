@@ -63,7 +63,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://googlevideo.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.youtube.com" />
         <link rel="dns-prefetch" href="https://i.ytimg.com" />
+        <link rel="dns-prefetch" href="https://img.youtube.com" />
         <link rel="dns-prefetch" href="https://googlevideo.com" />
+        <link rel="preload" as="image" href="/bg/spider.webp" fetchPriority="high" />
+        <link rel="preload" as="image" href="/bg/saloon.avif" />
         <script src="https://www.youtube.com/iframe_api" async defer />
       </head>
       <body className="antialiased bg-[#050508] text-white selection:bg-amber-500/30 selection:text-amber-200">

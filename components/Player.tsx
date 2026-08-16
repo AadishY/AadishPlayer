@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { Playlist, Track } from "@/data/playlists";
 
 declare global {
@@ -11,7 +11,7 @@ declare global {
 }
 
 // ==========================================
-// MODULE-SCOPE SUB-COMPONENTS
+// MODULE-SCOPE SUB-COMPONENTS (MEMOIZED)
 // ==========================================
 
 function formatTime(seconds: number): string {
@@ -28,7 +28,7 @@ interface VinylDiscProps {
   onTapDisc?: () => void;
 }
 
-function VinylDisc({ size = "md", isPlaying, coverUrl, trackTitle, onTapDisc }: VinylDiscProps) {
+const VinylDisc = memo(function VinylDisc({ size = "md", isPlaying, coverUrl, trackTitle, onTapDisc }: VinylDiscProps) {
   const sizeClasses = size === "md" ? "w-20 h-20" : "w-12 h-12";
   const labelSizeClasses = size === "md" ? "w-9 h-9" : "w-5 h-5";
 
@@ -70,7 +70,7 @@ function VinylDisc({ size = "md", isPlaying, coverUrl, trackTitle, onTapDisc }: 
       </div>
     </div>
   );
-}
+});
 
 interface ProgressBarProps {
   currentTime: number;

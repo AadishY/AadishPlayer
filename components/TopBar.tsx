@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Clock from "./Clock";
 import { Playlist } from "@/data/playlists";
 
@@ -8,25 +8,60 @@ interface TopBarProps {
   currentPlaylist: Playlist;
   dullOpacity: number;
   onDullOpacityChange: (opacity: number) => void;
+  forceShow?: boolean;
 }
 
 export default function TopBar({
   currentPlaylist,
   dullOpacity,
   onDullOpacityChange,
+  forceShow,
 }: TopBarProps) {
   const [showSlider, setShowSlider] = useState<boolean>(false);
+  const [isTopNear, setIsTopNear] = useState<boolean>(false);
 
-  // Quick 1-tap cycle through dim levels: 0% -> 35% -> 65% -> 85% -> 0%
+  // Proximity-based auto-hiding for Header on PC / Desktop (< 110px from top) with RAF throttle
+  useEffect(() => {
+    let rafId: number | null = null;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (window.innerWidth < 768) {
+        setIsTopNear(true);
+        return;
+      }
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        setIsTopNear(e.clientY < 110);
+        rafId = null;
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  // Quick 1-tap cycle through dim levels: 0% -> 15% -> 40% -> 70% -> 0%
   const handleCycleDull = () => {
-    if (dullOpacity === 0) onDullOpacityChange(35);
-    else if (dullOpacity <= 35) onDullOpacityChange(65);
-    else if (dullOpacity <= 65) onDullOpacityChange(85);
+    if (dullOpacity === 0) onDullOpacityChange(15);
+    else if (dullOpacity <= 15) onDullOpacityChange(40);
+    else if (dullOpacity <= 40) onDullOpacityChange(70);
     else onDullOpacityChange(0);
   };
 
+  const isVisible = forceShow || isTopNear;
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between p-[max(0.75rem,env(safe-area-inset-top))] px-[max(1rem,env(safe-area-inset-right))] pointer-events-none select-none">
+    <header
+      onMouseEnter={() => setIsTopNear(true)}
+      className={`fixed top-0 left-0 right-0 z-40 flex items-center justify-between p-[max(0.75rem,env(safe-area-inset-top))] px-[max(1rem,env(safe-area-inset-right))] pointer-events-none select-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        isVisible
+          ? "translate-y-0 opacity-100"
+          : "md:-translate-y-full md:opacity-0"
+      }`}
+    >
       {/* Top-Left: Lucknow Live Clock + Dull Mode + GitHub Link */}
       <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2.5">
         <Clock />
@@ -79,9 +114,10 @@ export default function TopBar({
                 className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-amber-400"
               />
               <div className="flex justify-between items-center text-[8.5px] font-mono text-white/40 px-0.5">
-                <span onClick={() => onDullOpacityChange(0)} className="cursor-pointer hover:text-white">0% Off</span>
-                <span onClick={() => onDullOpacityChange(40)} className="cursor-pointer hover:text-white">40%</span>
-                <span onClick={() => onDullOpacityChange(75)} className="cursor-pointer hover:text-white">75% Max</span>
+                <span onClick={() => onDullOpacityChange(0)} className="cursor-pointer hover:text-white">0%</span>
+                <span onClick={() => onDullOpacityChange(15)} className="cursor-pointer hover:text-amber-300 font-bold">15%</span>
+                <span onClick={() => onDullOpacityChange(45)} className="cursor-pointer hover:text-white">45%</span>
+                <span onClick={() => onDullOpacityChange(80)} className="cursor-pointer hover:text-white">80%</span>
               </div>
             </div>
           )}

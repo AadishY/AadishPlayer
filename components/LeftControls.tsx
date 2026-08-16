@@ -4,10 +4,19 @@ import { useState, useEffect } from "react";
 
 interface LeftControlsProps {
   onRandomBg: () => void;
+  forceShow?: boolean;
+  isDynamic?: boolean;
+  onToggleDynamic?: () => void;
 }
 
-export default function LeftControls({ onRandomBg }: LeftControlsProps) {
+export default function LeftControls({
+  onRandomBg,
+  forceShow,
+  isDynamic = true,
+  onToggleDynamic,
+}: LeftControlsProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isNear, setIsNear] = useState(false);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -16,6 +25,29 @@ export default function LeftControls({ onRandomBg }: LeftControlsProps) {
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  // Proximity-based auto-hiding on PC / Desktop (< 220px from left edge) with RAF throttle
+  useEffect(() => {
+    let rafId: number | null = null;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (window.innerWidth < 768) {
+        setIsNear(true);
+        return;
+      }
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        setIsNear(e.clientX < 220);
+        rafId = null;
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, []);
 
   const toggleFullscreen = async () => {
@@ -30,11 +62,50 @@ export default function LeftControls({ onRandomBg }: LeftControlsProps) {
     }
   };
 
+  // If dynamic is OFF, it is always visible!
+  const isVisible = !isDynamic || forceShow || isNear;
+
   return (
     <aside
+      onMouseEnter={() => setIsNear(true)}
       aria-label="Left Screen Quick Controls"
-      className="fixed left-0 top-[30%] sm:top-[35%] z-30 flex flex-col gap-2.5 items-start select-none pl-0"
+      className={`fixed left-0 top-[26%] sm:top-[30%] z-30 flex flex-col gap-2 items-start select-none pl-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        isVisible
+          ? "translate-x-0 opacity-100"
+          : "md:-translate-x-[calc(100%-14px)] md:opacity-40 md:hover:translate-x-0 md:hover:opacity-100"
+      }`}
     >
+      {/* Dynamic Mode ON/OFF Toggle on Leftmost Border (Above Scene Button) */}
+      {onToggleDynamic && (
+        <button
+          onClick={onToggleDynamic}
+          title={
+            isDynamic
+              ? "Dynamic Mode is ON (Auto-hides UI after 10s). Click to keep UI always visible."
+              : "Dynamic Mode is OFF (UI is always visible). Click to turn ON auto-hiding."
+          }
+          aria-label="Toggle Dynamic Auto-Hiding Mode"
+          className={`glass-card group rounded-r-2xl border-r border-y p-2 flex items-center justify-center gap-1.5 shadow-2xl transition-all duration-300 hover:translate-x-1.5 active:scale-95 cursor-pointer ${
+            isDynamic
+              ? "border-amber-400/80 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.3)]"
+              : "border-white/20 bg-white/[0.10] text-white/70 hover:text-white hover:bg-white/[0.18]"
+          }`}
+        >
+          <div className="flex flex-col items-center justify-center gap-1 py-1">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                isDynamic
+                  ? "bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,1)]"
+                  : "bg-white/30"
+              }`}
+            />
+            <span className="text-[9px] font-mono font-extrabold tracking-wider uppercase [writing-mode:vertical-lr] rotate-180 drop-shadow-sm">
+              {isDynamic ? "DYN ON" : "DYN OFF"}
+            </span>
+          </div>
+        </button>
+      )}
+
       {/* 90-Degree Rotated Scene Randomizer Button on Leftmost Border (Glassmorphic) */}
       <button
         onClick={onRandomBg}

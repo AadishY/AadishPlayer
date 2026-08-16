@@ -14,6 +14,8 @@
   --safe-bottom: max(1rem, env(safe-area-inset-bottom));
   --safe-left: max(1rem, env(safe-area-inset-left));
   --safe-right: max(1rem, env(safe-area-inset-right));
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html,
@@ -29,17 +31,14 @@ body {
   -moz-osx-font-smoothing: grayscale;
   user-select: none;
   -webkit-user-select: none;
+  text-rendering: optimizeLegibility;
 }
 
-/* Default Hero Background */
-.hero-bg {
-  background-image: url('/bg/scene-wide.png');
-}
-
-@media (orientation: portrait) {
-  .hero-bg {
-    background-image: url('/bg/scene-tall.png');
-  }
+/* GPU Hardware Acceleration Helper */
+.gpu-layer {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 /* Noise / Grain overlay */
@@ -47,9 +46,10 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   mix-blend-mode: overlay;
   opacity: 0.25;
+  pointer-events: none;
 }
 
-/* Premium Luminous Translucent Glassmorphism */
+/* Premium Luminous Translucent Glassmorphism with GPU Boost */
 .glass-pill,
 .glass-card {
   border: 1px solid rgba(255, 255, 255, 0.22);
@@ -58,6 +58,7 @@ body {
   -webkit-backdrop-filter: blur(36px) saturate(1.8) brightness(1.1);
   box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.38);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+  transform: translateZ(0);
 }
 
 .glass-badge {
@@ -67,6 +68,7 @@ body {
   -webkit-backdrop-filter: blur(28px) saturate(1.7) brightness(1.12);
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.42);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+  transform: translateZ(0);
 }
 
 .glass-cassette {
@@ -75,9 +77,10 @@ body {
   backdrop-filter: blur(30px) saturate(1.75) brightness(1.08);
   -webkit-backdrop-filter: blur(30px) saturate(1.75) brightness(1.08);
   box-shadow: 0 16px 45px -8px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  transform: translateZ(0);
 }
 
-/* Vinyl Spinning Keyframe with hardware acceleration */
+/* Vinyl Spinning Keyframe with smooth 60fps GPU acceleration */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -90,6 +93,7 @@ body {
 .animate-spin-vinyl {
   animation: spin 8s linear infinite;
   will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Lucknow Clock Blinking Colon */
@@ -123,4 +127,13 @@ body {
 /* Prevent text selection and handle touch */
 .touch-none {
   touch-action: none;
+}
+
+/* Hide scrollbars cleanly */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

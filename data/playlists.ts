@@ -79,7 +79,28 @@ export function getWeightedBackground(playlistId: string, currentBg?: string): s
     }
   }
 
-  // Chatpate Gaane & other playlists
+  // Chatpate Gaane: Very low probability for Saloon & House (3% each), 94% distributed across console, music-box, study, etc.
+  if (playlistId === "chatpate-gaane") {
+    const roll = Math.random() * 100;
+    if (roll < 3) {
+      return "/bg/saloon.avif";
+    } else if (roll < 6) {
+      return "/bg/House.webp";
+    } else {
+      const partyScenes = [
+        "/bg/console.webp",
+        "/bg/music-box.webp",
+        "/bg/music-player.webp",
+        "/bg/music-player2.webp",
+        "/bg/study.webp",
+        "/bg/table.webp",
+      ].filter((f) => f !== currentBg);
+      const rand = Math.floor(Math.random() * partyScenes.length);
+      return partyScenes[rand] || "/bg/console.webp";
+    }
+  }
+
+  // Fallback for any other playlists
   const pool = ALL_OTHER_BACKGROUNDS.filter((b) => b.file !== currentBg);
   const candidateList = pool.length > 0 ? pool : ALL_OTHER_BACKGROUNDS;
   const rand = Math.floor(Math.random() * candidateList.length);

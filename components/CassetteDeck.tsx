@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Playlist, Track, PLAYLISTS } from "@/data/playlists";
 
 interface CassetteRackProps {
@@ -12,6 +12,7 @@ interface CassetteRackProps {
   onNextTrack: () => void;
   onPrevTrack: () => void;
   onOpenPlaylistDrawer: () => void;
+  forceShow?: boolean;
 }
 
 export default function CassetteRack({
@@ -23,6 +24,7 @@ export default function CassetteRack({
   onNextTrack,
   onPrevTrack,
   onOpenPlaylistDrawer,
+  forceShow,
 }: CassetteRackProps) {
   const [popupPlaylist, setPopupPlaylist] = useState<Playlist | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -60,14 +62,43 @@ export default function CassetteRack({
     return filteredTracks.slice(0, visibleCount);
   }, [filteredTracks, visibleCount, searchQuery]);
 
+  const [isRightNear, setIsRightNear] = useState(false);
+
+  // Proximity-based auto-hiding on PC / Desktop (> window.innerWidth - 260px) with RAF throttle
+  useEffect(() => {
+    let rafId: number | null = null;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (window.innerWidth < 768) return;
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        setIsRightNear(e.clientX > window.innerWidth - 260);
+        rafId = null;
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  const isVisible = forceShow || isRightNear;
+
   return (
     <>
       {/* ======================================================== */}
-      {/* DESKTOP: Scaled-Down Right Border Docked Cassette Rack */}
+      {/* DESKTOP: Auto-Hiding Scaled-Down Right Border Docked Cassette Rack */}
       {/* ======================================================== */}
       <aside
+        onMouseEnter={() => setIsRightNear(true)}
         aria-label="Cassette & DVD Deck Bay"
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col items-end gap-2.5 select-none pr-0.5"
+        className={`fixed right-0 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col items-end gap-2.5 select-none pr-0.5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          isVisible
+            ? "translate-x-0 opacity-100"
+            : "translate-x-[calc(100%-14px)] opacity-40 hover:translate-x-0 hover:opacity-100"
+        }`}
       >
         {PLAYLISTS.map((playlist) => {
           const isActive = playlist.id === currentPlaylist.id;
