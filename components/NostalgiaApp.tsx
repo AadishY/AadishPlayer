@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PLAYLISTS, Playlist, getBackgroundsForPlaylist, Track } from "@/data/playlists";
+import { PLAYLISTS, Playlist, getBackgroundsForPlaylist, getWeightedBackground, Track } from "@/data/playlists";
 import Player from "@/components/Player";
 import TopBar from "@/components/TopBar";
 import LeftControls from "@/components/LeftControls";
@@ -21,19 +21,17 @@ export default function NostalgiaApp() {
 
   // Client-side mount: pick random background from allowed pool & preload all images
   useEffect(() => {
-    const pool = getBackgroundsForPlaylist(PLAYLISTS[0].id);
-    const rand = Math.floor(Math.random() * pool.length);
-    if (pool[rand]?.file) {
-      setActiveBg(pool[rand].file);
-    }
+    const chosenBg = getWeightedBackground(PLAYLISTS[0].id);
+    setActiveBg(chosenBg);
 
-    // Preload all 11 unique background scenes for 0ms instant switching
+    // Preload all background scenes for 0ms instant switching
     const allBgs = [
+      "/bg/saloon.avif",
+      "/bg/House.webp",
       "/bg/spider.webp",
       "/bg/spider2.webp",
       "/bg/console.webp",
       "/bg/music-box.webp",
-      "/bg/House.webp",
       "/bg/music-player.webp",
       "/bg/music-player2.webp",
       "/bg/study.webp",
@@ -52,31 +50,25 @@ export default function NostalgiaApp() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  // Manual Random Background Button Click (100% guarantee never repeating current activeBg)
+  // Manual Random Background Button Click with 48/48/4 probability distribution
   const handleRandomBg = () => {
+    const nextBg = getWeightedBackground(currentPlaylist.id, activeBg);
+    setActiveBg(nextBg);
     const pool = getBackgroundsForPlaylist(currentPlaylist.id);
-    const available = pool.filter((s) => s.file !== activeBg);
-    const candidateList = available.length > 0 ? available : pool;
-    const randomIndex = Math.floor(Math.random() * candidateList.length);
-    const chosen = candidateList[randomIndex];
-    setActiveBg(chosen.file);
-    showToast(`Scene: ${chosen.name}`);
+    const sceneInfo = pool.find((s) => s.file === nextBg);
+    showToast(`Scene: ${sceneInfo?.name || "Retro Scene"}`);
   };
 
   const handleSelectScene = (sceneFile: string) => {
     setActiveBg(sceneFile);
   };
 
-  // Playlist Change: 100% guarantee changing to a different random background without repeating activeBg
+  // Playlist Change with weighted background selection (48% Saloon, 48% House, 4% others for Indian Saloon)
   const handlePlaylistChange = (playlist: Playlist) => {
     if (playlist.id === currentPlaylist.id) return;
     setCurrentPlaylist(playlist);
     setSelectedTrackIndex(null);
-    const pool = getBackgroundsForPlaylist(playlist.id);
-    const available = pool.filter((b) => b.file !== activeBg);
-    const candidateList = available.length > 0 ? available : pool;
-    const rand = Math.floor(Math.random() * candidateList.length);
-    const newBg = candidateList[rand]?.file || playlist.themeBackground;
+    const newBg = getWeightedBackground(playlist.id, activeBg);
     setActiveBg(newBg);
     showToast(`Tape Inserted: ${playlist.name}`);
   };
@@ -85,11 +77,8 @@ export default function NostalgiaApp() {
   const handleSelectTrack = (playlist: Playlist, trackIndex: number) => {
     if (playlist.id !== currentPlaylist.id) {
       setCurrentPlaylist(playlist);
-      const pool = getBackgroundsForPlaylist(playlist.id);
-      const available = pool.filter((b) => b.file !== activeBg);
-      const candidateList = available.length > 0 ? available : pool;
-      const rand = Math.floor(Math.random() * candidateList.length);
-      setActiveBg(candidateList[rand]?.file || playlist.themeBackground);
+      const newBg = getWeightedBackground(playlist.id, activeBg);
+      setActiveBg(newBg);
     }
     setSelectedTrackIndex(trackIndex);
     const track = playlist.tracks[trackIndex];
@@ -136,7 +125,7 @@ export default function NostalgiaApp() {
         onOpenPlaylistDrawer={() => setIsDrawerOpen(true)}
       />
 
-      {/* Upper Layer: Massive Cinematic Typography (Positioned higher upward with safe sidebar margin) */}
+      {/* Upper Layer: Massive Cinematic Typography */}
       <div className="flex-1 flex flex-col items-center justify-start pt-10 sm:pt-12 md:pt-14 pb-0 z-10 px-4">
         <NostalgicTitle activeBg={activeBg} />
       </div>
