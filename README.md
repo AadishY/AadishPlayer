@@ -39,7 +39,7 @@ Created with ❤️ by **Aadish Yadav**
 
 4. **`Gaming` (Side D • 53 Tracks 🎮)**:
    - 53 late night phonk, anime loops, sped-up & gaming beats (*Sunflower*, *Misery.*, *Sweet little Bumble Bee*, *SugarCrash!*, *Cupid*, *Young Girl A*, *Brazilian Phonk*, *After Dark*, *Resonance*, *Memory Reboot*, *GigaChad Theme*, *Rave*, *Snowfall*, etc.).
-   - Atmospheric 90s console gaming room, cyberpunk neon skylines & midnight study lamps.
+   - Weighted background probability: **84% prioritized across 90s Retro Console (`console.webp`), Vintage Twilight Cassette (`music-box.webp`), and Morning Balcony Table (`table.webp`)**, with 16% distributed across other scenes.
 
 ---
 

@@ -100,18 +100,32 @@ export function getWeightedBackground(playlistId: string, currentBg?: string): s
     }
   }
 
-  // Gaming Playlist: High focus on retro console, cyberpunk skylines & study lamp
+  // Gaming Playlist: console, music-box, and table have the highest probability (84% combined), rest 16%
   if (playlistId === "gaming") {
-    const gameScenes = [
+    const roll = Math.random() * 100;
+    const topTier = [
       "/bg/console.webp",
-      "/bg/spider.webp",
-      "/bg/spider2.webp",
-      "/bg/study.webp",
-      "/bg/music-player.webp",
       "/bg/music-box.webp",
-    ].filter((f) => f !== currentBg);
-    const rand = Math.floor(Math.random() * gameScenes.length);
-    return gameScenes[rand] || "/bg/console.webp";
+      "/bg/table.webp",
+    ];
+
+    if (roll < 84) {
+      const candidates = topTier.filter((f) => f !== currentBg);
+      const chosen = candidates.length > 0 ? candidates : topTier;
+      return chosen[Math.floor(Math.random() * chosen.length)];
+    } else {
+      const otherScenes = [
+        "/bg/spider.webp",
+        "/bg/spider2.webp",
+        "/bg/study.webp",
+        "/bg/music-player.webp",
+        "/bg/music-player2.webp",
+        "/bg/House.webp",
+        "/bg/saloon.avif",
+      ].filter((f) => f !== currentBg);
+      const chosen = otherScenes.length > 0 ? otherScenes : otherScenes;
+      return chosen[Math.floor(Math.random() * chosen.length)] || "/bg/console.webp";
+    }
   }
 
   // Fallback for any other playlists
