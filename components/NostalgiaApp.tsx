@@ -21,7 +21,18 @@ export default function NostalgiaApp() {
   const [dullOpacity, setDullOpacity] = useState<number>(15);
   const [forceShowAll, setForceShowAll] = useState<boolean>(true);
   const [isPlayerNear, setIsPlayerNear] = useState<boolean>(false);
-  const [isDynamic, setIsDynamic] = useState<boolean>(false);
+  const [isDynamic, setIsDynamic] = useState<boolean>(true);
+  const [showCenterTime, setShowCenterTime] = useState<boolean>(false);
+  const [mobileHidden, setMobileHidden] = useState<boolean>(false);
+  const [isMobileScreen, setIsMobileScreen] = useState<boolean>(false);
+
+  // Screen size tracking
+  useEffect(() => {
+    const checkScreen = () => setIsMobileScreen(window.innerWidth < 768);
+    checkScreen();
+    window.addEventListener("resize", checkScreen, { passive: true });
+    return () => window.removeEventListener("resize", checkScreen);
+  }, []);
 
   // Load saved user settings from localStorage on client mount
   useEffect(() => {
@@ -38,6 +49,11 @@ export default function NostalgiaApp() {
       if (savedDynamic !== null) {
         setIsDynamic(savedDynamic === "true");
       }
+
+      const savedCenterTime = localStorage.getItem("aadishplayer_center_time");
+      if (savedCenterTime !== null) {
+        setShowCenterTime(savedCenterTime === "true");
+      }
     } catch (e) {
       console.warn("Could not load saved settings:", e);
     }
@@ -46,13 +62,93 @@ export default function NostalgiaApp() {
   // Show all side buttons & full player scale for 10 seconds on site mount & on playlist change
   useEffect(() => {
     setForceShowAll(true);
+    setMobileHidden(false);
     const timer = setTimeout(() => {
       setForceShowAll(false);
     }, 10000); // 10 seconds
     return () => clearTimeout(timer);
   }, [currentPlaylist.id]);
 
-  // High-performance RAF-throttled proximity detection for smooth 60fps scaling
+  // Robust Single-Channel Pointer Tap & Double-Tap Detector (Hides even if Dynamic is OFF)
+  useEffect(() => {
+    let hideTimer: NodeJS.Timeout | null = null;
+    let singleTapTimer: NodeJS.Timeout | null = null;
+    let lastTapTimestamp = 0;
+
+    const reset10sHideTimer = () => {
+      if (hideTimer) clearTimeout(hideTimer);
+      if (isDynamic) {
+        hideTimer = setTimeout(() => {
+          setMobileHidden(true);
+        }, 10000); // 10 seconds
+      }
+    };
+
+    const handlePointerUp = (e: PointerEvent) => {
+      // Don't intercept clicks on interactive controls
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      const isInteractive = Boolean(
+        target.closest("button") ||
+        target.closest("a") ||
+        target.closest("input") ||
+        target.closest("[role='button']")
+      );
+
+      if (isInteractive) {
+        // Keep active when clicking interactive controls
+        reset10sHideTimer();
+        return;
+      }
+
+      const now = Date.now();
+      const timeSinceLastTap = now - lastTapTimestamp;
+
+      // Double-Tap Detected (< 350ms and > 40ms) -> Hides ALL controls immediately (even if Dynamic is OFF)
+      if (timeSinceLastTap > 40 && timeSinceLastTap < 350) {
+        lastTapTimestamp = 0;
+        if (singleTapTimer) {
+          clearTimeout(singleTapTimer);
+          singleTapTimer = null;
+        }
+        if (hideTimer) clearTimeout(hideTimer);
+        setMobileHidden((prev) => !prev);
+      } else {
+        // First tap: debounce to check if a second tap follows
+        lastTapTimestamp = now;
+        if (singleTapTimer) clearTimeout(singleTapTimer);
+        singleTapTimer = setTimeout(() => {
+          // Single tap confirmed: unhide all elements (TopBar, LeftControls, DVD, Player) & start 10s hide timer!
+          setMobileHidden(false);
+          reset10sHideTimer();
+          singleTapTimer = null;
+        }, 220);
+      }
+    };
+
+    // Initialize
+    setMobileHidden(false);
+    reset10sHideTimer();
+
+    window.addEventListener("pointerup", handlePointerUp, { passive: true });
+
+    return () => {
+      if (hideTimer) clearTimeout(hideTimer);
+      if (singleTapTimer) clearTimeout(singleTapTimer);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [isDynamic, currentPlaylist.id]);
+
+  // Automatic wallpaper changing interval: 30 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveBg((prevBg) => getWeightedBackground(currentPlaylist.id, prevBg));
+    }, 30000); // 30 seconds
+    return () => clearInterval(timer);
+  }, [currentPlaylist.id]);
+
+  // High-performance RAF-throttled proximity detection for smooth 60fps scaling on PC
   useEffect(() => {
     let rafId: number | null = null;
 
@@ -128,6 +224,19 @@ export default function NostalgiaApp() {
     });
   };
 
+  const handleToggleCenterTime = () => {
+    setShowCenterTime((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("aadishplayer_center_time", String(next));
+      } catch (e) {
+        console.warn("Could not save center time setting:", e);
+      }
+      showToast(next ? "Center Clock: ON" : "Center Clock: OFF");
+      return next;
+    });
+  };
+
   // Manual Random Background Button Click with 48/48/4 probability distribution
   const handleRandomBg = () => {
     const nextBg = getWeightedBackground(currentPlaylist.id, activeBg);
@@ -177,20 +286,23 @@ export default function NostalgiaApp() {
     setSelectedTrackIndex(prevIndex);
   };
 
-  const shouldForceShow = !isDynamic || forceShowAll;
-  const isPlayerFull = !isDynamic || forceShowAll || isPlayerNear;
+  // Visibility logic:
+  // When mobileHidden is true (double-clicked/timed-out), ALL components hide/scale down immediately!
+  // When mobileHidden is false (single-tapped), ALL components show at full visibility!
+  const isControlsVisible = !mobileHidden && (!isDynamic || forceShowAll || isMobileScreen);
+  const isPlayerExpanded = !mobileHidden && (!isDynamic || forceShowAll || isPlayerNear || isMobileScreen);
 
   return (
     <>
       {/* Dynamic Background Scene Layer (-z-20) with smooth 1000ms transition */}
       <div
-        className="fixed inset-0 -z-20 bg-cover bg-center transition-all duration-1000 ease-in-out pointer-events-none"
+        className="fixed inset-0 -z-20 bg-cover bg-center transition-all duration-1000 ease-in-out pointer-events-none transform-gpu will-change-[background-image]"
         style={{ backgroundImage: `url('${activeBg}')` }}
       />
 
       {/* Dull Mode Black Dimming Overlay (-z-15) */}
       <div
-        className="fixed inset-0 -z-15 bg-black transition-opacity duration-300 pointer-events-none"
+        className="fixed inset-0 -z-15 bg-black transition-opacity duration-300 pointer-events-none transform-gpu will-change-[opacity]"
         style={{ opacity: dullOpacity / 100 }}
       />
 
@@ -199,31 +311,34 @@ export default function NostalgiaApp() {
         currentPlaylist={currentPlaylist}
         dullOpacity={dullOpacity}
         onDullOpacityChange={handleDullOpacityChange}
-        forceShow={shouldForceShow}
+        forceShow={isControlsVisible}
+        showCenterTime={showCenterTime}
       />
 
-      {/* Leftmost Border-Docked Vertical Controls (Dynamic ON/OFF, Scene & Fullscreen) */}
+      {/* Leftmost Border-Docked Vertical Controls (Dynamic ON/OFF, Scene, Fullscreen & Time) */}
       <LeftControls
         onRandomBg={handleRandomBg}
-        forceShow={forceShowAll}
+        forceShow={isControlsVisible}
         isDynamic={isDynamic}
         onToggleDynamic={handleToggleDynamic}
+        showCenterTime={showCenterTime}
+        onToggleCenterTime={handleToggleCenterTime}
       />
 
-      {/* Upper Layer: Massive Cinematic Typography */}
-      <div className="flex-1 flex flex-col items-center justify-start pt-10 sm:pt-12 md:pt-14 pb-0 z-10 px-4">
-        <NostalgicTitle activeBg={activeBg} />
+      {/* Upper Layer: Massive Cinematic Typography with optional live Center Clock (PC Only) */}
+      <div className="flex-1 flex flex-col items-center justify-start pt-8 sm:pt-10 md:pt-12 pb-0 z-10 px-4">
+        <NostalgicTitle activeBg={activeBg} showCenterTime={showCenterTime} />
       </div>
 
-      {/* Bottom Area: Centerpiece Vinyl Player + Mobile Cassette Bay */}
-      <div className="w-full flex flex-col items-center justify-end gap-2.5 pb-[max(1.25rem,env(safe-area-inset-bottom))] px-[max(0.75rem,env(safe-area-inset-left))] z-30">
-        {/* Main Centerpiece Vinyl Player (Ultra-smooth scale down to 76% when idle) */}
+      {/* Bottom Area: Centerpiece Vinyl Player + Mobile Cassette Bay (Stacked, ZERO Overlap) */}
+      <div className="w-full flex flex-col items-center justify-end gap-2 pb-[max(1rem,env(safe-area-inset-bottom))] px-[max(0.75rem,env(safe-area-inset-left))] z-30">
+        {/* Main Centerpiece Vinyl Player (Classic Smooth Scale Down to 78% on idle) */}
         <div
           onMouseEnter={() => setIsPlayerNear(true)}
-          className={`w-full max-w-xl transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom will-change-[transform,opacity] ${
-            isPlayerFull
-              ? "scale-100 opacity-100 drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
-              : "md:scale-[0.76] md:opacity-60 md:hover:scale-100 md:hover:opacity-100"
+          className={`w-full max-w-xl transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] origin-bottom will-change-[transform,opacity] transform-gpu ${
+            isPlayerExpanded
+              ? "scale-100 opacity-100 translate-y-0 drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+              : "scale-[0.78] md:scale-[0.76] opacity-60 md:opacity-60 md:hover:scale-100 md:hover:opacity-100"
           }`}
         >
           <Player
@@ -237,20 +352,18 @@ export default function NostalgiaApp() {
           />
         </div>
 
-        {/* Cassette Rack (Desktop: Fixed Right Border Dock | Mobile: Clean Bottom Station Bay) */}
-        <div className="w-full max-w-xl">
-          <CassetteRack
-            currentPlaylist={currentPlaylist}
-            currentTrack={currentTrack}
-            isPlaying={isPlaying}
-            onSelectPlaylist={handlePlaylistChange}
-            onSelectTrack={handleSelectTrack}
-            onNextTrack={handleNextTrack}
-            onPrevTrack={handlePrevTrack}
-            onOpenPlaylistDrawer={() => setIsDrawerOpen(true)}
-            forceShow={shouldForceShow}
-          />
-        </div>
+        {/* Cassette Rack (Desktop: Fixed Right Edge Viewport Dock | Mobile: Vertically Stacked Below Player) */}
+        <CassetteRack
+          currentPlaylist={currentPlaylist}
+          currentTrack={currentTrack}
+          isPlaying={isPlaying}
+          onSelectPlaylist={handlePlaylistChange}
+          onSelectTrack={handleSelectTrack}
+          onNextTrack={handleNextTrack}
+          onPrevTrack={handlePrevTrack}
+          onOpenPlaylistDrawer={() => setIsDrawerOpen(true)}
+          forceShow={isControlsVisible}
+        />
       </div>
 
       {/* Playlist / Song / Scene Drawer Modal */}

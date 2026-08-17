@@ -7,13 +7,17 @@ interface LeftControlsProps {
   forceShow?: boolean;
   isDynamic?: boolean;
   onToggleDynamic?: () => void;
+  showCenterTime?: boolean;
+  onToggleCenterTime?: () => void;
 }
 
 export default function LeftControls({
   onRandomBg,
   forceShow,
-  isDynamic = false,
+  isDynamic = true,
   onToggleDynamic,
+  showCenterTime = false,
+  onToggleCenterTime,
 }: LeftControlsProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isNear, setIsNear] = useState(false);
@@ -33,7 +37,7 @@ export default function LeftControls({
 
     const handleMouseMove = (e: MouseEvent) => {
       if (window.innerWidth < 768) {
-        setIsNear(true);
+        setIsNear(false);
         return;
       }
       if (rafId) return;
@@ -62,17 +66,16 @@ export default function LeftControls({
     }
   };
 
-  // If dynamic is OFF, it is always visible!
-  const isVisible = !isDynamic || forceShow || isNear;
+  const isVisible = forceShow || isNear;
 
   return (
     <aside
       onMouseEnter={() => setIsNear(true)}
       aria-label="Left Screen Quick Controls"
-      className={`fixed left-0 top-[26%] sm:top-[30%] z-30 flex flex-col gap-2 items-start select-none pl-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`fixed left-0 top-[22%] sm:top-[26%] z-30 flex flex-col gap-2 items-start select-none pl-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isVisible
           ? "translate-x-0 opacity-100"
-          : "md:-translate-x-[calc(100%-14px)] md:opacity-40 md:hover:translate-x-0 md:hover:opacity-100"
+          : "-translate-x-[calc(100%-14px)] opacity-40 hover:translate-x-0 hover:opacity-100"
       }`}
     >
       {/* Dynamic Mode ON/OFF Toggle on Leftmost Border (Above Scene Button) */}
@@ -152,6 +155,37 @@ export default function LeftControls({
           </span>
         </div>
       </button>
+
+      {/* Center Live Time Toggle Button on Leftmost Border (PC / DESKTOP ONLY - Hidden on Mobile) */}
+      {onToggleCenterTime && (
+        <button
+          onClick={onToggleCenterTime}
+          title={
+            showCenterTime
+              ? "Center Clock is ON. Click to hide center time."
+              : "Center Clock is OFF. Click to show live time on center."
+          }
+          aria-label="Toggle Center Time Display"
+          className={`hidden md:flex glass-card group rounded-r-2xl border-r border-y p-2 items-center justify-center gap-1.5 shadow-2xl transition-all duration-300 hover:translate-x-1.5 active:scale-95 cursor-pointer ${
+            showCenterTime
+              ? "border-amber-400/80 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.3)]"
+              : "border-white/20 bg-white/[0.10] text-white/70 hover:text-white hover:bg-white/[0.18]"
+          }`}
+        >
+          <div className="flex flex-col items-center justify-center gap-1 py-1">
+            <span
+              className={`w-2 h-2 rounded-full ${
+                showCenterTime
+                  ? "bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,1)]"
+                  : "bg-white/30"
+              }`}
+            />
+            <span className="text-[9px] font-mono font-extrabold tracking-wider uppercase [writing-mode:vertical-lr] rotate-180 drop-shadow-sm">
+              {showCenterTime ? "TIME ON" : "TIME OFF"}
+            </span>
+          </div>
+        </button>
+      )}
     </aside>
   );
 }

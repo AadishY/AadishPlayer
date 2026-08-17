@@ -9,6 +9,7 @@ interface TopBarProps {
   dullOpacity: number;
   onDullOpacityChange: (opacity: number) => void;
   forceShow?: boolean;
+  showCenterTime?: boolean;
 }
 
 export default function TopBar({
@@ -16,6 +17,7 @@ export default function TopBar({
   dullOpacity,
   onDullOpacityChange,
   forceShow,
+  showCenterTime = false,
 }: TopBarProps) {
   const [showSlider, setShowSlider] = useState<boolean>(false);
   const [isTopNear, setIsTopNear] = useState<boolean>(false);
@@ -26,7 +28,7 @@ export default function TopBar({
 
     const handleMouseMove = (e: MouseEvent) => {
       if (window.innerWidth < 768) {
-        setIsTopNear(true);
+        setIsTopNear(false);
         return;
       }
       if (rafId) return;
@@ -59,12 +61,12 @@ export default function TopBar({
       className={`fixed top-0 left-0 right-0 z-40 flex items-center justify-between p-[max(0.75rem,env(safe-area-inset-top))] px-[max(1rem,env(safe-area-inset-right))] pointer-events-none select-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isVisible
           ? "translate-y-0 opacity-100"
-          : "md:-translate-y-full md:opacity-0"
+          : "-translate-y-full opacity-0"
       }`}
     >
-      {/* Top-Left: Lucknow Live Clock + Dull Mode + GitHub Link */}
+      {/* Top-Left: Lucknow Live Clock (hidden if Center Time is ON) + Dull Mode + GitHub Link */}
       <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2.5">
-        <Clock />
+        {!showCenterTime && <Clock />}
 
         {/* Dull Mode (Blackness Dim Controller) */}
         <div className="relative flex items-center">

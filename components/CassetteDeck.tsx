@@ -89,7 +89,7 @@ export default function CassetteRack({
   return (
     <>
       {/* ======================================================== */}
-      {/* DESKTOP: Auto-Hiding Scaled-Down Right Border Docked Cassette Rack */}
+      {/* DESKTOP: Fixed at ACTUAL Rightmost Border of Viewport */}
       {/* ======================================================== */}
       <aside
         onMouseEnter={() => setIsRightNear(true)}
@@ -248,9 +248,15 @@ export default function CassetteRack({
       </aside>
 
       {/* ======================================================== */}
-      {/* MOBILE: Horizontal Mini DVD & Cassette Rack docked at Bottom */}
+      {/* MOBILE: Horizontal Mini DVD & Cassette Rack (Stacked Flow, ZERO overlap) */}
       {/* ======================================================== */}
-      <div className="md:hidden flex items-center justify-center gap-1.5 w-full px-1 py-1">
+      <div
+        className={`w-full max-w-xl md:hidden flex items-center justify-center gap-1.5 px-1 py-1 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          isVisible
+            ? "opacity-100 translate-y-0 max-h-32 pointer-events-auto"
+            : "opacity-0 translate-y-6 max-h-0 pointer-events-none overflow-hidden"
+        }`}
+      >
         {PLAYLISTS.map((playlist) => {
           const isActive = playlist.id === currentPlaylist.id;
 
