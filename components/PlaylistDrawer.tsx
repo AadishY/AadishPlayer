@@ -87,7 +87,7 @@ export default function PlaylistDrawer({
               <span className="text-amber-400">✦</span> AadishPlayer Stations & Tracks
             </h3>
             <p className="text-[11px] sm:text-xs text-white/60 mt-0.5">
-              153 curated tracks across 3 nostalgia stations
+              162 curated tracks across 4 nostalgia stations
             </p>
           </div>
           <button

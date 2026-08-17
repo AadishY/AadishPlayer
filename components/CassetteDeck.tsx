@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, memo } from "react";
 import { Playlist, Track, PLAYLISTS } from "@/data/playlists";
 
 interface CassetteRackProps {
@@ -15,7 +15,7 @@ interface CassetteRackProps {
   forceShow?: boolean;
 }
 
-export default function CassetteRack({
+const CassetteRack = memo(function CassetteRack({
   currentPlaylist,
   currentTrack,
   isPlaying,
@@ -89,171 +89,174 @@ export default function CassetteRack({
   return (
     <>
       {/* ======================================================== */}
-      {/* DESKTOP: Fixed at ACTUAL Rightmost Border of Viewport */}
+      {/* DESKTOP: Fixed Right Edge Viewport Dock (Never Cropped) */}
       {/* ======================================================== */}
       <aside
         onMouseEnter={() => setIsRightNear(true)}
+        onMouseLeave={() => setIsRightNear(false)}
         aria-label="Cassette & DVD Deck Bay"
-        className={`fixed right-0 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col items-end gap-2.5 select-none pr-0.5 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+        className={`fixed right-0 top-1/2 -translate-y-1/2 z-30 hidden md:flex flex-col items-end select-none w-[228px] max-h-[88vh] overflow-y-auto no-scrollbar overscroll-contain py-4 pl-12 pr-1 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           isVisible
-            ? "translate-x-0 opacity-100"
-            : "translate-x-[calc(100%-14px)] opacity-40 hover:translate-x-0 hover:opacity-100"
+            ? "translate-x-0 opacity-100 pointer-events-auto"
+            : "translate-x-[calc(100%-14px)] opacity-40 hover:translate-x-0 hover:opacity-100 pointer-events-auto"
         }`}
       >
-        {PLAYLISTS.map((playlist) => {
-          const isActive = playlist.id === currentPlaylist.id;
+        <div className="flex flex-col items-end gap-2.5 w-full">
+          {PLAYLISTS.map((playlist) => {
+            const isActive = playlist.id === currentPlaylist.id;
 
-          return (
-            <div
-              key={playlist.id}
-              onClick={() => {
-                if (!isActive) {
-                  onSelectPlaylist(playlist);
-                }
-              }}
-              title={isActive ? `${playlist.name} (Active in Deck)` : `Click to insert ${playlist.name}`}
-              className={`group relative cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-                isActive
-                  ? "-translate-x-4 scale-100 z-30 opacity-100"
-                  : "translate-x-3 hover:translate-x-1.5 scale-90 z-10 opacity-70 hover:opacity-95"
-              }`}
-            >
-              {/* Scaled-Down Cassette Housing Body (168px width) */}
+            return (
               <div
-                className={`w-[168px] rounded-l-[16px] p-2 glass-card border-l border-y transition-all duration-300 shadow-2xl flex flex-col active:scale-95 cursor-pointer ${
+                key={playlist.id}
+                onClick={() => {
+                  if (!isActive) {
+                    onSelectPlaylist(playlist);
+                  }
+                }}
+                title={isActive ? `${playlist.name} (Active in Deck)` : `Click to insert ${playlist.name}`}
+                className={`group relative cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
                   isActive
-                    ? "border-amber-400/90 bg-white/[0.16] shadow-[0_12px_32px_rgba(245,158,11,0.4),inset_0_1px_0_rgba(255,255,255,0.4)] ring-1 ring-amber-400/40"
-                    : "border-white/15 bg-white/[0.05] hover:border-white/30"
+                    ? "-translate-x-3 scale-100 z-30 opacity-100"
+                    : "translate-x-3 hover:translate-x-1.5 scale-90 z-10 opacity-70 hover:opacity-95"
                 }`}
               >
-                {/* Status Tab & Quick Tracklist Popup Trigger */}
-                <div className="flex items-center justify-between px-1 mb-1">
-                  <span
-                    className={`text-[8px] font-mono font-extrabold tracking-wider px-1.5 py-0.5 rounded uppercase ${
-                      isActive
-                        ? "bg-amber-400 text-slate-950 shadow-[0_0_8px_rgba(251,191,36,0.9)]"
-                        : "bg-white/10 text-white/60"
-                    }`}
-                  >
-                    {isActive ? "✦ LOADED" : "⬇ RECESS"}
-                  </span>
-
-                  <button
-                    onClick={(e) => handleOpenSongPopup(playlist, e)}
-                    title="Open all songs in popup"
-                    className="text-[8px] font-mono text-amber-300 hover:text-amber-200 px-1.5 py-0.5 rounded-full bg-white/10 hover:bg-amber-400/20 hover:border-amber-400/50 border border-white/10 transition-all flex items-center gap-0.5"
-                  >
-                    <span>{playlist.tracks.length}</span>
-                    <span className="text-[8px]">♫</span>
-                  </button>
-                </div>
-
-                {/* Cassette Face Shell */}
-                <div className="w-full rounded-[10px] overflow-hidden bg-black/40 border border-white/15 shadow-xl flex flex-col backdrop-blur-md">
-                  {/* Top Label Area with Rich Theme Color */}
-                  <div
-                    className={`w-full px-2 py-1 bg-gradient-to-r ${playlist.cassetteColor} flex flex-col justify-between border-b border-black/30 shadow-inner`}
-                  >
-                    <h4 className="font-extrabold text-[10.5px] text-white tracking-wide truncate drop-shadow-md">
-                      {playlist.name}
-                    </h4>
-                    <span className="text-[7.5px] font-mono text-amber-200/90 font-medium truncate">
-                      {playlist.cassetteLabel}
+                {/* Scaled-Down Cassette Housing Body (168px width with generous left margin) */}
+                <div
+                  className={`w-[168px] rounded-l-[16px] p-2 glass-card border-l border-y transition-all duration-300 shadow-2xl flex flex-col active:scale-95 cursor-pointer ${
+                    isActive
+                      ? "border-amber-400/90 bg-white/[0.16] shadow-[0_12px_32px_rgba(245,158,11,0.4),inset_0_1px_0_rgba(255,255,255,0.4)] ring-1 ring-amber-400/40"
+                      : "border-white/15 bg-white/[0.05] hover:border-white/30"
+                  }`}
+                >
+                  {/* Status Tab & Quick Tracklist Popup Trigger */}
+                  <div className="flex items-center justify-between px-1 mb-1">
+                    <span
+                      className={`text-[8px] font-mono font-extrabold tracking-wider px-1.5 py-0.5 rounded uppercase ${
+                        isActive
+                          ? "bg-amber-400 text-slate-950 shadow-[0_0_8px_rgba(251,191,36,0.9)]"
+                          : "bg-white/10 text-white/60"
+                      }`}
+                    >
+                      {isActive ? "✦ LOADED" : "⬇ RECESS"}
                     </span>
-                  </div>
 
-                  {/* Active Playing Track Banner & Song Changer */}
-                  {isActive && (
-                    <div className="bg-black/50 px-1.5 py-0.5 flex items-center justify-between border-b border-white/10">
-                      <div
-                        onClick={(e) => handleOpenSongPopup(playlist, e)}
-                        className="flex items-center gap-1 min-w-0 pr-1 cursor-pointer group/title hover:text-amber-300"
-                        title="Click to view songs"
-                      >
-                        <span className="w-1 h-1 rounded-full bg-amber-400 animate-ping shrink-0" />
-                        <span className="text-[9.5px] font-semibold text-amber-200 truncate group-hover/title:underline">
-                          {currentTrack.title}
-                        </span>
-                      </div>
-
-                      {/* Mini Prev/Next Track Steppers */}
-                      <div className="flex items-center gap-0.5 shrink-0">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onPrevTrack();
-                          }}
-                          title="Previous song"
-                          className="w-4 h-4 rounded bg-white/10 hover:bg-white/30 text-white flex items-center justify-center text-[8px] transition-colors"
-                        >
-                          ⏮
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onNextTrack();
-                          }}
-                          title="Next song"
-                          className="w-4 h-4 rounded bg-white/10 hover:bg-white/30 text-white flex items-center justify-center text-[8px] transition-colors"
-                        >
-                          ⏭
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Center Spool Window with Dual Spinning Tape Hubs */}
-                  <div className="relative px-3 py-2 bg-gradient-to-b from-black/80 to-slate-950/90 flex items-center justify-center gap-4">
-                    {/* Left Spool Reel */}
-                    <div className="relative w-6 h-6 rounded-full border-2 border-white/30 flex items-center justify-center bg-black/60 shadow-inner">
-                      <div
-                        className={`w-3 h-3 rounded-full border border-dashed border-amber-300/80 ${
-                          isActive && isPlaying ? "animate-[spin_4s_linear_infinite]" : ""
-                        }`}
-                      />
-                      <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
-                    </div>
-
-                    {/* Central Tape View Window */}
-                    <div className="w-6 h-3 rounded bg-amber-900/30 border border-white/20 flex items-center justify-center">
-                      <div className="w-full h-0.5 bg-amber-600/40 rounded-full" />
-                    </div>
-
-                    {/* Right Spool Reel */}
-                    <div className="relative w-6 h-6 rounded-full border-2 border-white/30 flex items-center justify-center bg-black/60 shadow-inner">
-                      <div
-                        className={`w-3 h-3 rounded-full border border-dashed border-amber-300/80 ${
-                          isActive && isPlaying ? "animate-[spin_4s_linear_infinite]" : ""
-                        }`}
-                      />
-                      <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
-                    </div>
-                  </div>
-
-                  {/* Bottom Footer Details */}
-                  <div className="px-2 py-1 bg-black/70 flex items-center justify-between text-[7px] font-mono text-white/50 border-t border-white/5">
-                    <span className="truncate">{playlist.tracks.length} TRACKS</span>
                     <button
                       onClick={(e) => handleOpenSongPopup(playlist, e)}
-                      className="text-amber-400/90 hover:text-amber-300 underline tracking-tighter"
+                      title="Open all songs in popup"
+                      className="text-[8px] font-mono text-amber-300 hover:text-amber-200 px-1.5 py-0.5 rounded-full bg-white/10 hover:bg-amber-400/20 hover:border-amber-400/50 border border-white/10 transition-all flex items-center gap-0.5 cursor-pointer"
                     >
-                      VIEW LIST
+                      <span>{playlist.tracks.length}</span>
+                      <span className="text-[8px]">♫</span>
                     </button>
+                  </div>
+
+                  {/* Cassette Face Shell */}
+                  <div className="w-full rounded-[10px] overflow-hidden bg-black/40 border border-white/15 shadow-xl flex flex-col backdrop-blur-md">
+                    {/* Top Label Area with Rich Theme Color */}
+                    <div
+                      className={`w-full px-2 py-1 bg-gradient-to-r ${playlist.cassetteColor} flex flex-col justify-between border-b border-black/30 shadow-inner`}
+                    >
+                      <h4 className="font-extrabold text-[10.5px] text-white tracking-wide truncate drop-shadow-md">
+                        {playlist.name}
+                      </h4>
+                      <span className="text-[7.5px] font-mono text-amber-200/90 font-medium truncate">
+                        {playlist.cassetteLabel}
+                      </span>
+                    </div>
+
+                    {/* Active Playing Track Banner & Song Changer */}
+                    {isActive && (
+                      <div className="bg-black/50 px-1.5 py-0.5 flex items-center justify-between border-b border-white/10">
+                        <div
+                          onClick={(e) => handleOpenSongPopup(playlist, e)}
+                          className="flex items-center gap-1 min-w-0 pr-1 cursor-pointer group/title hover:text-amber-300"
+                          title="Click to view songs"
+                        >
+                          <span className="w-1 h-1 rounded-full bg-amber-400 animate-ping shrink-0" />
+                          <span className="text-[9.5px] font-semibold text-amber-200 truncate group-hover/title:underline">
+                            {currentTrack.title}
+                          </span>
+                        </div>
+
+                        {/* Mini Prev/Next Track Steppers */}
+                        <div className="flex items-center gap-0.5 shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onPrevTrack();
+                            }}
+                            title="Previous song"
+                            className="w-4 h-4 rounded bg-white/10 hover:bg-white/30 text-white flex items-center justify-center text-[8px] transition-colors cursor-pointer"
+                          >
+                            ⏮
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onNextTrack();
+                            }}
+                            title="Next song"
+                            className="w-4 h-4 rounded bg-white/10 hover:bg-white/30 text-white flex items-center justify-center text-[8px] transition-colors cursor-pointer"
+                          >
+                            ⏭
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Center Spool Window with Dual Spinning Tape Hubs */}
+                    <div className="relative px-3 py-2 bg-gradient-to-b from-black/80 to-slate-950/90 flex items-center justify-center gap-4">
+                      {/* Left Spool Reel */}
+                      <div className="relative w-6 h-6 rounded-full border-2 border-white/30 flex items-center justify-center bg-black/60 shadow-inner">
+                        <div
+                          className={`w-3 h-3 rounded-full border border-dashed border-amber-300/80 ${
+                            isActive && isPlaying ? "animate-[spin_4s_linear_infinite]" : ""
+                          }`}
+                        />
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
+                      </div>
+
+                      {/* Central Tape View Window */}
+                      <div className="w-6 h-3 rounded bg-amber-900/30 border border-white/20 flex items-center justify-center">
+                        <div className="w-full h-0.5 bg-amber-600/40 rounded-full" />
+                      </div>
+
+                      {/* Right Spool Reel */}
+                      <div className="relative w-6 h-6 rounded-full border-2 border-white/30 flex items-center justify-center bg-black/60 shadow-inner">
+                        <div
+                          className={`w-3 h-3 rounded-full border border-dashed border-amber-300/80 ${
+                            isActive && isPlaying ? "animate-[spin_4s_linear_infinite]" : ""
+                          }`}
+                        />
+                        <div className="w-1.5 h-1.5 rounded-full bg-white/80" />
+                      </div>
+                    </div>
+
+                    {/* Bottom Footer Details */}
+                    <div className="px-2 py-1 bg-black/70 flex items-center justify-between text-[7px] font-mono text-white/50 border-t border-white/5">
+                      <span className="truncate">{playlist.tracks.length} TRACKS</span>
+                      <button
+                        onClick={(e) => handleOpenSongPopup(playlist, e)}
+                        className="text-amber-400/90 hover:text-amber-300 underline tracking-tighter cursor-pointer"
+                      >
+                        VIEW LIST
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </aside>
 
       {/* ======================================================== */}
-      {/* MOBILE: Horizontal Mini DVD & Cassette Rack (Stacked Flow, ZERO overlap) */}
+      {/* MOBILE: Horizontal Scrollable DVD & Cassette Station Bay */}
       {/* ======================================================== */}
       <div
-        className={`w-full max-w-xl md:hidden flex items-center justify-center gap-1.5 px-1 py-1 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        className={`w-full max-w-xl md:hidden flex items-center justify-start gap-2 px-3 py-1.5 overflow-x-auto no-scrollbar overscroll-contain transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
           isVisible
-            ? "opacity-100 translate-y-0 max-h-32 pointer-events-auto"
+            ? "opacity-100 translate-y-0 max-h-36 pointer-events-auto"
             : "opacity-0 translate-y-6 max-h-0 pointer-events-none overflow-hidden"
         }`}
       >
@@ -268,7 +271,7 @@ export default function CassetteRack({
                   onSelectPlaylist(playlist);
                 }
               }}
-              className={`flex-1 min-w-0 p-1.5 rounded-2xl glass-card transition-all duration-300 cursor-pointer active:scale-95 select-none ${
+              className={`flex-shrink-0 w-[112px] p-1.5 rounded-2xl glass-card transition-all duration-300 cursor-pointer active:scale-95 select-none ${
                 isActive
                   ? "border-2 border-amber-400 bg-white/[0.22] shadow-[0_0_24px_rgba(251,191,36,0.65),inset_0_1px_0_rgba(255,255,255,0.6)] ring-2 ring-amber-400/60 scale-[1.03] z-10"
                   : "border border-white/10 bg-black/45 hover:bg-white/[0.08] opacity-75 hover:opacity-100"
@@ -317,7 +320,7 @@ export default function CassetteRack({
                     isActive ? "bg-amber-400 animate-pulse shadow-[0_0_8px_rgba(251,191,36,1)]" : "bg-white/30"
                   }`}
                 />
-                <span className={`font-bold text-[10.5px] sm:text-[11.5px] truncate text-center leading-tight ${
+                <span className={`font-bold text-[10px] sm:text-[11px] truncate text-center leading-tight ${
                   isActive ? "text-amber-200" : "text-white"
                 }`}>
                   {playlist.name}
@@ -325,11 +328,13 @@ export default function CassetteRack({
               </div>
 
               {/* Clean Status Badge */}
-              <span className={`text-[7.5px] font-mono font-bold mt-0.5 uppercase tracking-wider ${
-                isActive ? "text-amber-300 font-extrabold" : "text-white/50"
-              }`}>
-                {isActive ? "✦ LOADED" : "⬇ RECESS"}
-              </span>
+              <div className="flex items-center justify-center mt-0.5">
+                <span className={`text-[7px] font-mono font-bold uppercase tracking-wider ${
+                  isActive ? "text-amber-300 font-extrabold" : "text-white/50"
+                }`}>
+                  {isActive ? "✦ LOADED" : "⬇ RECESS"}
+                </span>
+              </div>
             </div>
           );
         })}
@@ -339,7 +344,7 @@ export default function CassetteRack({
       {/* POPUP MODAL: All Songs in Selected DVD/Cassette Playlist */}
       {/* ======================================================== */}
       {popupPlaylist && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
           {/* Click outside to close */}
           <div className="absolute inset-0" onClick={() => setPopupPlaylist(null)} />
 
@@ -353,7 +358,7 @@ export default function CassetteRack({
               </div>
               <button
                 onClick={() => setPopupPlaylist(null)}
-                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs text-white/70 hover:text-white transition-colors"
+                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs text-white/70 hover:text-white transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -418,7 +423,7 @@ export default function CassetteRack({
               <div className="pt-3 border-t border-white/10 flex justify-center">
                 <button
                   onClick={() => setVisibleCount((prev) => prev + 10)}
-                  className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold text-amber-300 transition-all border border-white/10 hover:border-amber-400/40 active:scale-95"
+                  className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-semibold text-amber-300 transition-all border border-white/10 hover:border-amber-400/40 active:scale-95 cursor-pointer"
                 >
                   Show More (+10) • {filteredTracks.length - visibleCount} remaining
                 </button>
@@ -429,4 +434,6 @@ export default function CassetteRack({
       )}
     </>
   );
-}
+});
+
+export default CassetteRack;

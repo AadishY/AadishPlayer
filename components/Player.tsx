@@ -672,28 +672,28 @@ export default function Player({
   return (
     <div className="w-full max-w-xl flex flex-col items-center gap-2">
       {/* 
-        VISIBLE YOUTUBE IFRAME CANVAS / ARTWORK SLOT 
-        Fully hidden when minimized (0px height, 0 opacity) to prevent any stray black bar
+        VISIBLE YOUTUBE IFRAME CANVAS / ARTWORK SLOT (Scaled-Down Compact PiP)
+        Fully hidden when minimized (0px height, 0 opacity)
       */}
       <div
-        className={`w-full transition-all duration-500 overflow-hidden ${
-          showVideoPlayer ? "max-h-[260px] opacity-100 mb-2" : "max-h-0 opacity-0 mb-0 pointer-events-none"
+        className={`w-full max-w-[240px] sm:max-w-[280px] transition-all duration-500 overflow-hidden mx-auto ${
+          showVideoPlayer ? "max-h-[175px] opacity-100 mb-1.5" : "max-h-0 opacity-0 mb-0 pointer-events-none"
         }`}
       >
-        <div className="glass-card rounded-2xl p-2 relative shadow-2xl overflow-hidden border border-white/15">
-          <div className="flex items-center justify-between px-2 py-1 mb-1.5">
-            <span className="text-[11px] font-mono tracking-wider uppercase text-amber-400/90 flex items-center gap-1.5">
+        <div className="glass-card rounded-xl p-1.5 relative shadow-2xl overflow-hidden border border-white/15">
+          <div className="flex items-center justify-between px-1.5 py-0.5 mb-1">
+            <span className="text-[10px] font-mono tracking-wider uppercase text-amber-400/90 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-              Live YouTube Feed & Artwork
+              Live Visual Feed
             </span>
             <button
               onClick={() => setShowVideoPlayer(false)}
-              className="text-[11px] text-white/60 hover:text-white px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 transition-colors"
+              className="text-[9px] text-white/60 hover:text-white px-1.5 py-0.2 rounded bg-white/10 hover:bg-white/20 transition-colors cursor-pointer"
             >
-              Minimize ✕
+              ✕
             </button>
           </div>
-          <div className="aspect-video w-full rounded-xl overflow-hidden bg-black/60 shadow-inner relative">
+          <div className="aspect-video w-full rounded-lg overflow-hidden bg-black/60 shadow-inner relative">
             <div id="youtube-live-frame" className="w-full h-full" />
           </div>
         </div>

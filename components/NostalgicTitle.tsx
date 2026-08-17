@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 
 export interface TitleItem {
   title: string;
@@ -40,7 +40,7 @@ interface NostalgicTitleProps {
   showCenterTime?: boolean;
 }
 
-export default function NostalgicTitle({ activeBg, showCenterTime = false }: NostalgicTitleProps) {
+const NostalgicTitle = memo(function NostalgicTitle({ activeBg, showCenterTime = false }: NostalgicTitleProps) {
   const isSpiderman = Boolean(activeBg?.includes("spider"));
   const currentPool = isSpiderman ? SPIDERMAN_QUOTES : GENERAL_HINDI_QUOTES;
 
@@ -334,12 +334,12 @@ export default function NostalgicTitle({ activeBg, showCenterTime = false }: Nos
         {current.subtitle}
       </p>
 
-      {/* Center Live Time with Interactive Click-to-Cycle Styles (PC / DESKTOP ONLY - Hidden on Mobile) */}
+      {/* Center Live Time with Interactive Click-to-Cycle Styles */}
       {showCenterTime && centerTime && (
         <div
           onClick={handleCycleTimeStyle}
           title="Click to change time format/style"
-          className="hidden md:block mt-3 sm:mt-4 cursor-pointer transition-all duration-300 active:scale-95 group select-none"
+          className="block mt-3 sm:mt-4 cursor-pointer transition-all duration-300 active:scale-95 group select-none"
         >
           {/* Format 0: Luminous Glass Badge */}
           {timeStyle === 0 && (
@@ -395,4 +395,6 @@ export default function NostalgicTitle({ activeBg, showCenterTime = false }: Nos
       )}
     </div>
   );
-}
+});
+
+export default NostalgicTitle;

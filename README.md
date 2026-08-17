@@ -23,10 +23,10 @@ Created with ❤️ by **Aadish Yadav**
 
 ---
 
-## 📻 Curated Radio Stations (153 Tracks)
+## 📻 Curated Radio Stations (162 Tracks)
 
-1. **`NotIndian` (Side A • 53 Tracks)**:
-   - Late night phonk, anime loops, sped-up & lo-fi beats (*Sunflower*, *Misery.*, *Sweet little Bumble Bee*, *SugarCrash!*, *Cupid*, *Young Girl A*, *Brazilian Phonk*, *After Dark*, *Resonance*, *Memory Reboot*, etc.).
+1. **`NotIndian` (Side A • 9 Tracks)**:
+   - Handpicked late night anime loops, sped-up edits & lo-fi beats (*Sunflower*, *Misery.*, *Discord x My Ordinary Life*, *Montagem Santa Fe 2*, *birds for some reason*, *Bayle the Dread*, *CURSE YOU BAYLE*, *Young Girl A*, *Babydoll*).
    - Atmospheric cyberpunk & neon skyline scenes (*spider.webp*, *spider2.webp*).
 
 2. **`Indian Saloon` (Side B • 50 Tracks)**:
@@ -36,6 +36,10 @@ Created with ❤️ by **Aadish Yadav**
 3. **`Chatpate Gaane` (Side C • 50 Tracks 🫦)**:
    - Spicy desi dance hits, item bangers & party anthems (*Pink Lips*, *Paani Waala Dance*, *Aga Bai*, *Fevicol Se*, *Dilliwaali Girlfriend*, *Munni Badnaam*, *Character Dheela*, *Afghan Jalebi*, *Baby Doll*, *Chikni Chameli*, *Sheila Ki Jawani*, etc.).
    - High-energy distribution across retro consoles, midnight jazz clubs, and study lamps.
+
+4. **`Gaming` (Side D • 53 Tracks 🎮)**:
+   - 53 late night phonk, anime loops, sped-up & gaming beats (*Sunflower*, *Misery.*, *Sweet little Bumble Bee*, *SugarCrash!*, *Cupid*, *Young Girl A*, *Brazilian Phonk*, *After Dark*, *Resonance*, *Memory Reboot*, *GigaChad Theme*, *Rave*, *Snowfall*, etc.).
+   - Atmospheric 90s console gaming room, cyberpunk neon skylines & midnight study lamps.
 
 ---
 

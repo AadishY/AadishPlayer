@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 
 interface LeftControlsProps {
   onRandomBg: () => void;
@@ -11,7 +11,7 @@ interface LeftControlsProps {
   onToggleCenterTime?: () => void;
 }
 
-export default function LeftControls({
+const LeftControls = memo(function LeftControls({
   onRandomBg,
   forceShow,
   isDynamic = true,
@@ -24,11 +24,26 @@ export default function LeftControls({
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(Boolean(document.fullscreenElement));
+      const doc = document as any;
+      setIsFullscreen(Boolean(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      ));
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("mozfullscreenchange", handleFullscreenChange);
+      document.removeEventListener("MSFullscreenChange", handleFullscreenChange);
+    };
   }, []);
 
   // Proximity-based auto-hiding on PC / Desktop (< 220px from left edge) with RAF throttle
@@ -54,15 +69,42 @@ export default function LeftControls({
     };
   }, []);
 
-  const toggleFullscreen = async () => {
+  const toggleFullscreen = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     try {
-      if (!document.fullscreenElement) {
-        await document.documentElement.requestFullscreen();
+      const doc = document as any;
+      const docEl = document.documentElement as any;
+
+      const isFs = Boolean(
+        doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement
+      );
+
+      if (!isFs) {
+        if (docEl.requestFullscreen) {
+          await docEl.requestFullscreen();
+        } else if (docEl.webkitRequestFullscreen) {
+          await docEl.webkitRequestFullscreen();
+        } else if (docEl.mozRequestFullScreen) {
+          await docEl.mozRequestFullScreen();
+        } else if (docEl.msRequestFullscreen) {
+          await docEl.msRequestFullscreen();
+        }
       } else {
-        await document.exitFullscreen();
+        if (doc.exitFullscreen) {
+          await doc.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          await doc.webkitExitFullscreen();
+        } else if (doc.mozCancelFullScreen) {
+          await doc.mozCancelFullScreen();
+        } else if (doc.msExitFullscreen) {
+          await doc.msExitFullscreen();
+        }
       }
-    } catch (e) {
-      console.warn("Fullscreen toggle error:", e);
+    } catch (err) {
+      console.warn("Fullscreen toggle error:", err);
     }
   };
 
@@ -71,17 +113,21 @@ export default function LeftControls({
   return (
     <aside
       onMouseEnter={() => setIsNear(true)}
+      onMouseLeave={() => setIsNear(false)}
       aria-label="Left Screen Quick Controls"
-      className={`fixed left-0 top-[22%] sm:top-[26%] z-30 flex flex-col gap-2 items-start select-none pl-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+      className={`fixed left-0 top-[22%] sm:top-[26%] z-50 flex flex-col gap-2 items-start select-none pl-0 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isVisible
-          ? "translate-x-0 opacity-100"
-          : "-translate-x-[calc(100%-14px)] opacity-40 hover:translate-x-0 hover:opacity-100"
+          ? "translate-x-0 opacity-100 pointer-events-auto"
+          : "-translate-x-[calc(100%-14px)] opacity-40 hover:translate-x-0 hover:opacity-100 pointer-events-auto"
       }`}
     >
       {/* Dynamic Mode ON/OFF Toggle on Leftmost Border (Above Scene Button) */}
       {onToggleDynamic && (
         <button
-          onClick={onToggleDynamic}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleDynamic();
+          }}
           title={
             isDynamic
               ? "Dynamic Mode is ON (Auto-hides UI after 10s). Click to keep UI always visible."
@@ -111,7 +157,10 @@ export default function LeftControls({
 
       {/* 90-Degree Rotated Scene Randomizer Button on Leftmost Border (Glassmorphic) */}
       <button
-        onClick={onRandomBg}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRandomBg();
+        }}
         title="Change scene background (Hotkey: S)"
         aria-label="Change scene background"
         className="glass-card group rounded-r-2xl border-r border-y border-white/25 bg-white/[0.12] backdrop-blur-2xl p-2.5 flex items-center justify-center gap-2 shadow-2xl transition-all duration-300 hover:translate-x-1.5 hover:border-amber-400/70 hover:bg-white/[0.20] active:scale-95 cursor-pointer"
@@ -133,7 +182,10 @@ export default function LeftControls({
 
       {/* Fullscreen Toggle Button on Leftmost Border (Glassmorphic) */}
       <button
-        onClick={toggleFullscreen}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleFullscreen(e);
+        }}
         title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen (Hotkey: F)"}
         aria-label="Toggle Fullscreen"
         className="glass-card group rounded-r-2xl border-r border-y border-white/25 bg-white/[0.12] backdrop-blur-2xl p-2.5 flex items-center justify-center gap-2 shadow-2xl transition-all duration-300 hover:translate-x-1.5 hover:border-amber-400/70 hover:bg-white/[0.20] active:scale-95 cursor-pointer"
@@ -156,17 +208,20 @@ export default function LeftControls({
         </div>
       </button>
 
-      {/* Center Live Time Toggle Button on Leftmost Border (PC / DESKTOP ONLY - Hidden on Mobile) */}
+      {/* Center Live Time Toggle Button on Leftmost Border */}
       {onToggleCenterTime && (
         <button
-          onClick={onToggleCenterTime}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleCenterTime();
+          }}
           title={
             showCenterTime
               ? "Center Clock is ON. Click to hide center time."
               : "Center Clock is OFF. Click to show live time on center."
           }
           aria-label="Toggle Center Time Display"
-          className={`hidden md:flex glass-card group rounded-r-2xl border-r border-y p-2 items-center justify-center gap-1.5 shadow-2xl transition-all duration-300 hover:translate-x-1.5 active:scale-95 cursor-pointer ${
+          className={`flex glass-card group rounded-r-2xl border-r border-y p-2 items-center justify-center gap-1.5 shadow-2xl transition-all duration-300 hover:translate-x-1.5 active:scale-95 cursor-pointer ${
             showCenterTime
               ? "border-amber-400/80 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.3)]"
               : "border-white/20 bg-white/[0.10] text-white/70 hover:text-white hover:bg-white/[0.18]"
@@ -188,4 +243,6 @@ export default function LeftControls({
       )}
     </aside>
   );
-}
+});
+
+export default LeftControls;

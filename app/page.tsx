@@ -2,7 +2,7 @@ import NostalgiaApp from "@/components/NostalgiaApp";
 
 export default function Home() {
   return (
-    <main className="isolate relative flex min-h-dvh flex-1 flex-col items-center justify-between overflow-hidden">
+    <main className="isolate relative flex h-dvh max-h-dvh w-full flex-1 flex-col items-center justify-between overflow-hidden select-none">
       {/* 1. Fixed Background Layer (-z-20) with default scene-wide / scene-tall and Gradient Overlay */}
       <div className="fixed inset-0 -z-20 hero-bg bg-cover bg-center" />
       <div className="fixed inset-0 -z-20 bg-gradient-to-b from-black/35 via-transparent to-black/80 pointer-events-none" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Clock from "./Clock";
 import { Playlist } from "@/data/playlists";
 
@@ -12,7 +12,7 @@ interface TopBarProps {
   showCenterTime?: boolean;
 }
 
-export default function TopBar({
+const TopBar = memo(function TopBar({
   currentPlaylist,
   dullOpacity,
   onDullOpacityChange,
@@ -58,6 +58,7 @@ export default function TopBar({
   return (
     <header
       onMouseEnter={() => setIsTopNear(true)}
+      onMouseLeave={() => setIsTopNear(false)}
       className={`fixed top-0 left-0 right-0 z-40 flex items-center justify-between p-[max(0.75rem,env(safe-area-inset-top))] px-[max(1rem,env(safe-area-inset-right))] pointer-events-none select-none transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
         isVisible
           ? "translate-y-0 opacity-100"
@@ -161,4 +162,6 @@ export default function TopBar({
       </div>
     </header>
   );
-}
+});
+
+export default TopBar;
