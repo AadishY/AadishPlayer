@@ -1,6 +1,6 @@
 # 📻 AadishPlayer — 24/7 Nostalgia Radio
 
-A cozy, single-page retro web radio station crafted with **luminous glassmorphism**, vintage **cassette & vinyl deck aesthetics**, curated **Bollywood classics**, **midnight lo-fi beats**, and **ultra-smooth GPU-accelerated interaction physics**.
+A cozy, single-page retro web radio station crafted with **luminous glassmorphism**, vintage **cassette & vinyl deck aesthetics**, curated **Bollywood classics**, **midnight lo-fi beats**, **7 dynamic clock styles**, and **ultra-smooth GPU-accelerated interaction physics**.
 
 ---
 
@@ -41,24 +41,45 @@ Created with ❤️ by **Aadish Yadav**
 
 ## ✨ Features & Architecture
 
-- **🎚️ Dynamic Mode (Auto-Hide ON / OFF)**:
-   - **`DYN ON` (Default)**: On page load or playlist change, all controls, headers, and cassette decks are visible for **10 seconds**, then smoothly tuck away into the screen edges for a clean cinematic view.
-   - **Proximity Edge Gliding**: Moving the cursor towards any screen edge instantly slides out that respective control drawer (`< 110px` top for Header, `< 220px` left for Scene/Fullscreen, `> window.innerWidth - 260px` right for 3D Cassette Deck).
-   - **`DYN OFF`**: Keeps all controls permanently visible and fully expanded.
+- **🎚️ Dynamic Mode & Gesture Interaction Engine**:
+  - **`DYN ON` (Default)**: On page load or playlist change, all controls, headers, and cassette decks remain visible for **10 seconds**, then smoothly tuck away into screen edges for a clean cinematic view.
+  - **Single-Tap / Single-Click**: Instantly reveals **TopBar, LeftControls, DVD station cards, and Full Vinyl Player** at 100% full scale for 10 seconds.
+  - **Double-Tap / Double-Click**: Unconditionally hides all UI elements into pure wallpaper mode **regardless of whether Dynamic mode is ON or OFF**.
+  - **Proximity Edge Gliding (PC)**: Moving cursor towards any screen edge smoothly slides out that respective control drawer (`< 110px` top for Header, `< 220px` left for Controls, `> window.innerWidth - 260px` right for 3D Cassette Deck).
+
+- **🕰️ 7 Click-to-Cycle Live Clock Styles (PC Only)**:
+  - **Format 0**: Luminous Glass Badge (`● 11:56:33 AM`).
+  - **Format 1**: Massive Bold Raw Typography.
+  - **Format 2**: Retro Studio Digital LED (`REC ● 11:56:33 AM`).
+  - **Format 3**: Minimalist Wide-Tracked Clean White (`11 : 56 : 33 AM • LUCKNOW`).
+  - **Format 4**: Cyberpunk Glowing Neon Pill (`⚡ 11:56:33 AM`).
+  - **Format 5**: Giant Centerpiece Clock (Quote scales down into header, Time numbers expand to massive hero size).
+  - **Format 6**: Futuristic Geometric Day & Date format (`MONDAY`, `17 AUG 2026`, `-11:56:33-`).
+  - **Dynamic Calendar Logic**: Weekday name dynamically advances (`MONDAY` ➔ `TUESDAY` at midnight IST) with zero hardcoded strings.
+  - **Clean Mobile Typography**: Mobile screens remain pristine with clean retro Hindi/English quote typography (`गली`, `सुकून`, `VIBING`, etc.).
+
+- **🖼️ 30-Second Automatic Wallpaper Rotation**:
+  - Automatically transitions to a new weighted background scene every **30 seconds** with smooth 1000ms cross-fades.
+  - Decoupled from center quote rotation (quotes rotate smoothly every 1 minute).
+
 - **🌙 Dull Mode (Background Dim Controller)**:
-   - Default **15% blackness overlay** for optimal visual contrast.
-   - 1-tap cycle (`0% -> 15% -> 40% -> 70% -> 0%`) and slider control with quick presets.
+  - Default **15% blackness overlay** for optimal visual contrast.
+  - 1-tap cycle (`0% -> 15% -> 40% -> 70% -> 0%`) and slider control with quick presets.
+
 - **💾 LocalStorage Settings Persistence**:
-   - Automatically saves and restores your preferred **Dullness Opacity** and **Dynamic Auto-Hide Mode**.
+  - Automatically saves and restores your preferred **Dullness Opacity**, **Dynamic Auto-Hide Mode**, **Center Time Toggle**, and **Clock Style**.
+
 - **💿 Interactive Vinyl Turntable Centerpiece**:
-   - Tactile rotating vinyl disc with live cover art, center spindle, and tap-to-play/pause.
-   - Proximity-based idle scale-down (`76%`) with hardware-accelerated 700ms `cubic-bezier(0.22, 1, 0.36, 1)` easing.
-- **📼 3D Cassette Deck & Mobile DVD Spool Rack**:
-   - **Desktop**: Right-docked 3D cassette rack with dual spinning hubs when playing.
-   - **Mobile**: Docked bottom station changer featuring mini vintage cassette artwork with spinning spools, glowing amber active borders, and in-player `♫ 53` song drawer button.
+  - Tactile rotating vinyl disc with live cover art, center spindle, and tap-to-play/pause.
+  - Proximity-based idle scale-down (`78%`) with hardware-accelerated 700ms `cubic-bezier(0.22, 1, 0.36, 1)` easing.
+
+- **📼 3D Desktop Cassette Deck & Mobile DVD Station Bay**:
+  - **Desktop**: Anchored directly to the true **rightmost border of the browser window** (`fixed right-0 top-1/2 -translate-y-1/2`) with dual spinning tape reels when playing.
+  - **Mobile**: Zero-overlap vertically stacked bottom station bay with collapsible slide physics.
+
 - **⚡ Instant 144p Streaming & Zero Buffer**:
-   - Streamlined low-latency audio using YouTube's `tiny` (144p) quality profile.
-   - Pre-connected CDNs, DNS prefetching, and prioritized background scene preloading.
+  - Streamlined low-latency audio using YouTube's `tiny` (144p) quality profile.
+  - Pre-connected CDNs, DNS prefetching, and prioritized background scene preloading.
 
 ---
 
